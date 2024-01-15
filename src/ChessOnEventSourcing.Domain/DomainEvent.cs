@@ -1,6 +1,6 @@
 ﻿namespace ChessOnEventSourcing.Domain;
 
-public abstract class DomainEvent<TAggregateRootId> where TAggregateRootId : notnull
+public abstract class DomainEvent
 {
-    public TAggregateRootId AggregateId { get; protected init; } = default!;
+    public Guid AggregateId { get; protected init; } = default!;
 }

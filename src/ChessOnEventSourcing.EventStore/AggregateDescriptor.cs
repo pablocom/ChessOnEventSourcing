@@ -2,5 +2,5 @@
 
 public sealed record AggregateDescriptor(
     Guid AggregateId,
-    string Type,
+    string AggregateType,
     int Version);

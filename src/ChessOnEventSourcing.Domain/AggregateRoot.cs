@@ -1,17 +1,15 @@
 ﻿namespace ChessOnEventSourcing.Domain;
 
-public interface IAggregateRoot<TId> where TId : notnull
+public abstract class AggregateRoot : Entity
 {
-    IReadOnlyList<DomainEvent<TId>> DomainEvents { get; }
-    void ClearDomainEvents();
-}
+    private readonly List<DomainEvent> _domainEvents = [];
+    public IReadOnlyList<DomainEvent> DomainEvents => _domainEvents.ToArray().AsReadOnly();
+    
+    public int Version { get; protected set; }
 
-public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot<TId> where TId : IFormattable, notnull
-{
-    private readonly List<DomainEvent<TId>> _domainEvents = [];
-    public IReadOnlyList<DomainEvent<TId>> DomainEvents => _domainEvents.ToArray().AsReadOnly();
-
-    protected void AddDomainEvent(DomainEvent<TId> domainEvent) => _domainEvents.Add(domainEvent);
-    protected void AddDomainEvents(params DomainEvent<TId>[] domainEvents) => _domainEvents.AddRange(domainEvents);
+    protected void AddDomainEvent(DomainEvent domainEvent) => _domainEvents.Add(domainEvent);
+    protected void AddDomainEvents(params DomainEvent[] domainEvents) => _domainEvents.AddRange(domainEvents);
     public void ClearDomainEvents() => _domainEvents.Clear();
+    
+    public abstract void Apply(DomainEvent @event);
 }

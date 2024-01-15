@@ -1,6 +1,6 @@
 ﻿namespace ChessOnEventSourcing.Domain;
 
-public sealed class ChessboardCreated : DomainEvent<Guid>
+public sealed class ChessboardCreated : DomainEvent
 {
     public Guid CreatedBy { get; set; }
     public DateTimeOffset CreatedAt { get; set; }

@@ -1,5 +1,5 @@
 ﻿using Npgsql;
-using System.Data;
+using System.Data.Common;
 
 namespace ChessOnEventSourcing.EventStore;
 
@@ -9,10 +9,12 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
 
     public NpgsqlConnectionFactory(string connectionString)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
+
         _connectionString = connectionString;
     }
 
-    public async Task<IDbConnection> CreateConnectionAsync()
+    public async Task<DbConnection> CreateConnectionAsync(CancellationToken ct = default)
     {
         var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();

@@ -1,10 +1,12 @@
 ﻿namespace ChessOnEventSourcing.EventStore;
 
-public sealed record EventDescriptor(
-    Guid EventId,
-    Guid AggregateId,
-    string AggregateType,
-    string EventType,
-    string EventData,
-    int Version, 
-    DateTimeOffset OccurredOn);
+public sealed class EventDescriptor
+{
+    public Guid EventId { get; init; }
+    public Guid AggregateId { get; init; }
+    public string AggregateType { get; init; } = default!;
+    public string EventType { get; init; } = default!;
+    public string EventData { get; init; } = default!;
+    public int Version { get; init; }
+    public DateTimeOffset OccurredOn { get; init; }
+}

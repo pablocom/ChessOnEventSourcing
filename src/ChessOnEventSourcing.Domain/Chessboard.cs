@@ -1,6 +1,6 @@
 ﻿namespace ChessOnEventSourcing.Domain;
 
-public sealed class Chessboard : AggregateRoot<Guid>
+public sealed class Chessboard : AggregateRoot
 {
     public Guid CreatedBy { get; }
     public DateTimeOffset CreatedAt { get; }
@@ -14,9 +14,9 @@ public sealed class Chessboard : AggregateRoot<Guid>
         AddDomainEvent(new ChessboardCreated(Id, CreatedBy, CreatedAt));
     }
 
-    public void Apply(DomainEvent<Guid> @event)
+    public override void Apply(DomainEvent @event)
     {
-
+        Version++;
     }
 }
 

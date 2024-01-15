@@ -2,6 +2,7 @@
 using System.Text.Json;
 
 namespace ChessOnEventSourcing.EventStore.Repositories;
+
 public sealed class ChessboardRepository : IChessboardRepository
 {
     private readonly IEventStore _eventStore;
@@ -36,15 +37,15 @@ public sealed class ChessboardRepository : IChessboardRepository
         return chessboard;
     }
 
-    public async Task Save(Chessboard chessboard) => await _eventStore.Save<Chessboard, Guid>(chessboard);
+    public async Task Save(Chessboard chessboard) => await _eventStore.Save(chessboard);
 
-    private static DomainEvent<Guid> DeserializeEvent(EventDescriptor eventDescriptor)
+    private static DomainEvent DeserializeEvent(EventDescriptor eventDescriptor)
     {
         var eventType = Type.GetType(eventDescriptor.EventType);
         if (eventType is null)
             throw new Exception($"Could not find the corresponding CLR type for '{eventDescriptor.EventType}'");
 
-        var deserializedEvent = (DomainEvent<Guid>) JsonSerializer.Deserialize(eventDescriptor.EventData, eventType)!;
+        var deserializedEvent = (DomainEvent) JsonSerializer.Deserialize(eventDescriptor.EventData, eventType)!;
         return deserializedEvent;
     }
 }

@@ -1,10 +1,10 @@
 ﻿namespace ChessOnEventSourcing.Domain;
 
-public abstract class Entity<TId> : IEquatable<Entity<TId>> where TId : notnull, IFormattable
+public abstract class Entity : IEquatable<Entity>
 {
-    public TId Id { get; protected init; } = default!;
+    public Guid Id { get; protected init; } = default!;
 
-    public bool Equals(Entity<TId>? other)
+    public bool Equals(Entity? other)
     {
         if (other is null)
             return false;
@@ -24,7 +24,7 @@ public abstract class Entity<TId> : IEquatable<Entity<TId>> where TId : notnull,
         if (other.GetType() != GetType())
             return false;
 
-        return Equals((Entity<TId>)other);
+        return Equals((Entity)other);
     }
 
     public override int GetHashCode() => Id.GetHashCode();
