@@ -17,21 +17,23 @@ public interface IEventStore
 public sealed class EventStore : IEventStore
 {
     private readonly UnitOfWork _unitOfWork;
+    private readonly IDbConnectionFactory _dbConnectionFactory;
 
-    public EventStore(UnitOfWork unitOfWork)
+    public EventStore(UnitOfWork unitOfWork, IDbConnectionFactory dbConnectionFactory)
     {
         _unitOfWork = unitOfWork;
+        _dbConnectionFactory = dbConnectionFactory;
     }
 
     public Task<IEnumerable<EventDescriptor>> GetEvents(Guid aggregateId) => GetEvents(aggregateId, DateTimeOffset.MaxValue);
 
     public async Task<IEnumerable<EventDescriptor>> GetEvents(Guid aggregateId, DateTimeOffset date)
     {
-        var connection = _unitOfWork.GetDbConnection();
+        await using var connection = await _dbConnectionFactory.CreateConnectionAsync();
 
         var result = await connection.QueryAsync<EventDescriptor>("""
             SELECT "EventId", "AggregateId", "AggregateType", "EventType", "EventData", "Version", "OccurredOn" FROM "Events"
-            WHERE "AggregateId" = @AggregateId "OccurredOn" <= @Date AND ORDER BY "Version" ASC;
+            WHERE "AggregateId" = @AggregateId AND "OccurredOn" <= @Date ORDER BY "Version" ASC;
             """,
             new { AggregateId = aggregateId, Date = date }
         );
@@ -41,8 +43,6 @@ public sealed class EventStore : IEventStore
 
     public async Task Save(AggregateRoot aggregate)
     {
-        var connection = _unitOfWork.GetDbConnection();
-
         var aggregateType = aggregate.GetType().FullName!;
         var aggregateEvents = aggregate.DomainEvents;
 
@@ -50,6 +50,7 @@ public sealed class EventStore : IEventStore
         foreach (var @event in aggregateEvents)
         {
             var eventType = @event.GetType();
+
             eventDescriptors.Add(new EventDescriptor
             {
                 EventId = Guid.NewGuid(),
@@ -61,12 +62,13 @@ public sealed class EventStore : IEventStore
             });
         }
 
-        await using var command = new NpgsqlCommand("CALL save_aggregate(@AggregateId, @AggregateType, @ExpectedVersion, @Events)");
+        await using var command = await _unitOfWork.CreateCommand();
+
+        command.CommandText = "CALL save_aggregate(@AggregateId, @AggregateType, @ExpectedVersion, @Events)";
         command.Parameters.AddWithValue("AggregateId", aggregate.Id);
         command.Parameters.AddWithValue("AggregateType", aggregateType);
         command.Parameters.AddWithValue("ExpectedVersion", aggregate.Version);
         command.Parameters.AddWithValue("Events", NpgsqlDbType.Json, JsonSerializer.Serialize(eventDescriptors));
-        command.Connection = (NpgsqlConnection)connection;
 
         var result = await command.ExecuteReaderAsync();
     }

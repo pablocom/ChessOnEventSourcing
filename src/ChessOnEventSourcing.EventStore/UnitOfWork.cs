@@ -1,4 +1,5 @@
 ﻿using ChessOnEventSourcing.Application;
+using Npgsql;
 using System.Data.Common;
 
 namespace ChessOnEventSourcing.EventStore;
@@ -18,8 +19,8 @@ public sealed class UnitOfWork : IUnitOfWork, IAsyncDisposable
         if (_dbTransaction is not null)
             throw new InvalidOperationException("Another transaction already started. Multiple transactions are not supported.");
 
-        var connection = await _dbConnectionFactory.CreateConnectionAsync(ct);
-        _dbTransaction = await connection.BeginTransactionAsync(ct);
+        var dbConnection = await _dbConnectionFactory.CreateConnectionAsync(ct);
+        _dbTransaction = await dbConnection.BeginTransactionAsync(ct);
     }
 
     public async Task Commit(CancellationToken ct = default)
@@ -37,20 +38,23 @@ public sealed class UnitOfWork : IUnitOfWork, IAsyncDisposable
 
         await _dbTransaction.RollbackAsync(ct);
     }
-
-    public DbConnection GetDbConnection()
+        
+    public async Task<NpgsqlCommand> CreateCommand()
     {
         if (_dbTransaction is null)
-            throw new InvalidOperationException("Cannot retrieve database connection because no transaction was opened");
+            throw new InvalidOperationException("Cannot retrieve database connection because no transaction was started");
+        
+        var dbConnection = await _dbConnectionFactory.CreateConnectionAsync();
+       
+        var command = dbConnection.CreateCommand();
+        command.Transaction = _dbTransaction;
 
-        return _dbTransaction.Connection!;
+        return (NpgsqlCommand) command;
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_dbTransaction is null)
-            return;
-
-        await _dbTransaction.DisposeAsync();
+        if (_dbTransaction is not null)
+            await _dbTransaction.DisposeAsync();
     }
 }

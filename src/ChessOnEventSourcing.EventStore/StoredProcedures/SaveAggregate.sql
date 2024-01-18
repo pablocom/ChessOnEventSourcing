@@ -20,18 +20,20 @@ BEGIN
     FOR event_record IN SELECT * FROM json_array_elements(events) LOOP
         current_version := current_version + 1;
         INSERT INTO "Events" ("EventId", "AggregateId", "AggregateType", "EventType", "EventData", "Version", "OccurredOn")
-        VALUES (event_record->>'EventId', event_record->>'AggregateId', event_record->>'AggregateType', event_record->>'EventType', event_record->>'EventData', current_version, event_record->>'OccurredOn');
+        VALUES (
+       		uuid(event_record->>'EventId'), 
+       		uuid(event_record->>'AggregateId'), 
+       		event_record->>'AggregateType', 
+       		event_record->>'EventType', 
+       		(event_record->>'EventData')::jsonb, 
+       		current_version, 
+       		event_record->>'OccurredOn'
+       	);
     END LOOP;
 
     UPDATE "Aggregates"
     SET "Version" = current_version
     WHERE "AggregateId" = aggregate_id AND "Version" = expected_version;
-
-EXCEPTION
-    WHEN others THEN
-        -- In case of any error, rollback the transaction
-        ROLLBACK;
-        RAISE;
 END;
 $$;
 

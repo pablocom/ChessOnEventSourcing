@@ -41,11 +41,15 @@ public sealed class ChessboardRepository : IChessboardRepository
 
     private static DomainEvent DeserializeEvent(EventDescriptor eventDescriptor)
     {
-        var eventType = Type.GetType(eventDescriptor.EventType);
+        var assembly = typeof(ChessboardCreated).Assembly;
+        var eventType = assembly.GetType(eventDescriptor.EventType);
         if (eventType is null)
             throw new Exception($"Could not find the corresponding CLR type for '{eventDescriptor.EventType}'");
 
-        var deserializedEvent = (DomainEvent) JsonSerializer.Deserialize(eventDescriptor.EventData, eventType)!;
+        var deserializedEvent = (DomainEvent) JsonSerializer.Deserialize(eventDescriptor.EventData, eventType, new JsonSerializerOptions
+        {
+            IncludeFields = true,
+        })!;
         return deserializedEvent;
     }
 }

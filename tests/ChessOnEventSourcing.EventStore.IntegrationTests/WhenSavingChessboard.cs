@@ -26,12 +26,13 @@ public sealed class MappingIntegrationTestCollectionDefinition : ICollectionFixt
 [Collection(nameof(MappingIntegrationTestCollectionDefinition))]
 public class WhenSavingChessboard
 {
+    private readonly NpgsqlConnectionFactory _connectionFactory;
     private readonly UnitOfWork _unitOfWork;
 
     public WhenSavingChessboard(IntegrationTestFixture fixture)
     {
-        var connectionFactory = new NpgsqlConnectionFactory(fixture.Configuration.GetConnectionString("Database")!);
-        _unitOfWork = new UnitOfWork(connectionFactory);
+        _connectionFactory = new NpgsqlConnectionFactory(fixture.Configuration.GetConnectionString("Database")!);
+        _unitOfWork = new UnitOfWork(_connectionFactory);
     }
 
     [Fact]
@@ -40,14 +41,15 @@ public class WhenSavingChessboard
         var chessBoardId = Guid.NewGuid();
         var createdBy = Guid.NewGuid();
         var createdAt = new DateTimeOffset(2024, 1, 15, 17, 4, 0, TimeSpan.Zero);
-        var repository = new ChessboardRepository(new EventStore(_unitOfWork));
+        var repository = new ChessboardRepository(new EventStore(_unitOfWork, _connectionFactory));
 
         await _unitOfWork.BeginTransaction();
         await repository.Save(new Chessboard(chessBoardId, createdBy, createdAt));
         await _unitOfWork.Commit();
 
         var storedChessboard = await repository.GetBy(chessBoardId);
-        storedChessboard.Should().NotBeNull();
+
+        storedChessboard.Should().NotBeNull();  
         storedChessboard!.Id.Should().Be(chessBoardId);
         storedChessboard.CreatedBy.Should().Be(createdBy);
         storedChessboard.CreatedAt.Should().Be(createdAt);
