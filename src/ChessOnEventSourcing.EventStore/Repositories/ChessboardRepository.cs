@@ -1,6 +1,4 @@
 ﻿using ChessOnEventSourcing.Domain;
-using ChessOnEventSourcing.EventStore.Models;
-using System.Text.Json;
 
 namespace ChessOnEventSourcing.EventStore.Repositories;
 
@@ -13,16 +11,16 @@ public sealed class ChessboardRepository : IChessboardRepository
         _eventStore = eventStore;
     }
 
+    public async Task Save(Chessboard chessboard) => await _eventStore.Save(chessboard);
+
     public async Task<Chessboard?> GetBy(Guid chessboardId)
     {
         var events = await _eventStore.GetEvents(chessboardId);
 
         Chessboard? chessboard = null;
-
         foreach (var @event in events)
         {
-            var deserializedEvent = DeserializeEvent(@event);
-
+            var deserializedEvent = EventDeserializer.Deserialize(@event);
             if (deserializedEvent is ChessboardCreated chessBoardCreated)
             {
                 chessboard = new Chessboard(chessBoardCreated.AggregateId, chessBoardCreated.CreatedBy, chessBoardCreated.CreatedAt);
@@ -36,22 +34,5 @@ public sealed class ChessboardRepository : IChessboardRepository
         }
 
         return chessboard;
-    }
-
-    public async Task Save(Chessboard chessboard) => await _eventStore.Save(chessboard);
-
-    private static DomainEvent DeserializeEvent(EventDescriptor eventDescriptor)
-    {
-        var assembly = typeof(ChessboardCreated).Assembly;
-
-        var eventType = assembly.GetType(eventDescriptor.EventType);
-        if (eventType is null)
-            throw new Exception($"Could not find the corresponding CLR type for '{eventDescriptor.EventType}'");
-
-        var deserializedEvent = JsonSerializer.Deserialize(eventDescriptor.EventData, eventType) as DomainEvent;
-        if (deserializedEvent is null)
-            throw new Exception($"An error occurred during serialization of event of type {eventType.Name}");
-
-        return deserializedEvent;
     }
 }

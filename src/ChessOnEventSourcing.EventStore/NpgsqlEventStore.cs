@@ -10,12 +10,12 @@ namespace ChessOnEventSourcing.EventStore;
 
 public sealed class NpgsqlEventStore : IEventStore
 {
-    private readonly IGetCurrentTransaction _currentTransactionProvider;
+    private readonly IDbTransactionProvider _transactionProvider;
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
-    public NpgsqlEventStore(IGetCurrentTransaction currentTransactionProvider, IDbConnectionFactory dbConnectionFactory)
+    public NpgsqlEventStore(IDbTransactionProvider transactionProvider, IDbConnectionFactory dbConnectionFactory)
     {
-        _currentTransactionProvider = currentTransactionProvider;
+        _transactionProvider = transactionProvider;
         _dbConnectionFactory = dbConnectionFactory;
     }
 
@@ -40,16 +40,8 @@ public sealed class NpgsqlEventStore : IEventStore
             });
         }
 
-        DbConnection? dbConnection;
-
-        var transaction = _currentTransactionProvider.GetCurrentTransaction();
-        if (transaction is null)
-            dbConnection = await _dbConnectionFactory.CreateConnectionAsync(ct);
-        else
-            dbConnection = transaction.Connection;
-
-
-        await using var command = dbConnection!.CreateCommand();
+        var dbConnection = await GetDbConnection(ct);
+        await using var command = dbConnection.CreateCommand();
 
         command.CommandText = "CALL save_aggregate(@AggregateId, @AggregateType, @ExpectedVersion, @Events)";
 
@@ -66,7 +58,9 @@ public sealed class NpgsqlEventStore : IEventStore
 
     public async Task<IEnumerable<EventDescriptor>> GetEventsUntilDate(Guid aggregateId, DateTimeOffset date, CancellationToken ct = default)
     {
-        var result = await _currentTransactionProvider.GetCurrentTransaction().Connection!.QueryAsync<EventDescriptor>("""
+        var dbConnection = await GetDbConnection(ct);
+        
+        var result = await dbConnection.QueryAsync<EventDescriptor>("""
             SELECT "EventId", "AggregateId", "AggregateType", "EventType", "EventData", "Version", "OccurredOn" FROM "Events"
             WHERE "AggregateId" = @AggregateId AND "OccurredOn" <= @Date ORDER BY "Version" ASC;
             """,
@@ -74,5 +68,14 @@ public sealed class NpgsqlEventStore : IEventStore
         );
 
         return result;
+    }
+
+    private async Task<DbConnection> GetDbConnection(CancellationToken ct)
+    {
+        var transaction = _transactionProvider.GetCurrentTransaction();
+        if (transaction is null)
+            return await _dbConnectionFactory.CreateConnectionAsync(ct);
+        
+        return transaction.Connection!;
     }
 }

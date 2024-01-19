@@ -15,7 +15,7 @@ builder.Services.AddScoped<IEventStore, NpgsqlEventStore>();
 
 builder.Services.AddScoped<NpgsqlUnitOfWork>();
 builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<NpgsqlUnitOfWork>());
-builder.Services.AddScoped<IGetCurrentTransaction>(sp => sp.GetRequiredService<NpgsqlUnitOfWork>());
+builder.Services.AddScoped<IDbTransactionProvider>(sp => sp.GetRequiredService<NpgsqlUnitOfWork>());
 builder.Services.AddScoped<IChessboardRepository, ChessboardRepository>();
 builder.Services.AddScoped<IEventStore, NpgsqlEventStore>();
 builder.Services.AddScoped<ChessboardService>();

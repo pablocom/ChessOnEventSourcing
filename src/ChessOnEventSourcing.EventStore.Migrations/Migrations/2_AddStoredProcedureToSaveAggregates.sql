@@ -36,5 +36,3 @@ BEGIN
     WHERE "AggregateId" = aggregate_id AND "Version" = expected_version;
 END;
 $$;
-
-

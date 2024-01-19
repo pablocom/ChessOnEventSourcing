@@ -15,11 +15,19 @@ public sealed class ChessboardService
 
     public async Task CreateChessboard()
     {
-        await _unitOfWork.BeginTransaction();
+        try
+        {
+            await _unitOfWork.BeginTransaction();
 
-        var chessboard = new Chessboard(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.Now);
+            var chessboard = new Chessboard(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.Now);
         
-        await _chessboards.Save(chessboard);
-        await _unitOfWork.Commit();
+            await _chessboards.Save(chessboard);
+            await _unitOfWork.Commit();
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.Rollback();
+            throw;
+        }
     }
 }

@@ -4,7 +4,7 @@ using System.Data.Common;
 
 namespace ChessOnEventSourcing.EventStore;
 
-public sealed class NpgsqlUnitOfWork : IUnitOfWork, IGetCurrentTransaction, IAsyncDisposable
+public sealed class NpgsqlUnitOfWork : IUnitOfWork, IDbTransactionProvider, IAsyncDisposable
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private DbConnection? _dbConnection;
@@ -39,18 +39,9 @@ public sealed class NpgsqlUnitOfWork : IUnitOfWork, IGetCurrentTransaction, IAsy
 
         await _dbTransaction.RollbackAsync(ct);
     }
-        
 
-    public NpgsqlCommand CreateCommand()
-    {
-        if (_dbTransaction is null)
-            throw new InvalidOperationException("Cannot retrieve database connection because no transaction was started");
 
-        var command = _dbConnection!.CreateCommand();
-        command.Transaction = _dbTransaction;
-
-        return (NpgsqlCommand) command;
-    }
+    public NpgsqlTransaction? GetCurrentTransaction() => _dbTransaction as NpgsqlTransaction;
 
     public async ValueTask DisposeAsync()
     {
@@ -59,10 +50,5 @@ public sealed class NpgsqlUnitOfWork : IUnitOfWork, IGetCurrentTransaction, IAsy
 
         if (_dbConnection is not null)
             await _dbConnection.DisposeAsync();
-    }
-
-    public NpgsqlTransaction? GetCurrentTransaction()
-    {
-        return _dbTransaction is null ? null : (NpgsqlTransaction) _dbTransaction;
     }
 }
