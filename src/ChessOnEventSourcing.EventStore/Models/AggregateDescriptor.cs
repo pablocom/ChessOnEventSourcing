@@ -1,4 +1,4 @@
-﻿namespace ChessOnEventSourcing.EventStore;
+﻿namespace ChessOnEventSourcing.EventStore.Models;
 
 public sealed record AggregateDescriptor(
     Guid AggregateId,

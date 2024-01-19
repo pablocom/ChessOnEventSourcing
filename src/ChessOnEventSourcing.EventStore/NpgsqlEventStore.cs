@@ -1,5 +1,5 @@
-﻿using ChessOnEventSourcing.Application;
-using ChessOnEventSourcing.Domain;
+﻿using ChessOnEventSourcing.Domain;
+using ChessOnEventSourcing.EventStore.Models;
 using Dapper;
 using NpgsqlTypes;
 using System.Text.Json;
@@ -8,13 +8,11 @@ namespace ChessOnEventSourcing.EventStore;
 
 public sealed class NpgsqlEventStore : IEventStore
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IDbConnectionFactory _dbConnectionFactory;
+    private readonly IGetCurrentTransaction _currentTransactionProvider;
 
-    public NpgsqlEventStore(IUnitOfWork unitOfWork, IDbConnectionFactory dbConnectionFactory)
+    public NpgsqlEventStore(IGetCurrentTransaction currentTransactionProvider)
     {
-        _unitOfWork = unitOfWork;
-        _dbConnectionFactory = dbConnectionFactory;
+        _currentTransactionProvider = currentTransactionProvider;
     }
 
     public async Task Save(AggregateRoot aggregate, CancellationToken ct = default)
@@ -38,7 +36,8 @@ public sealed class NpgsqlEventStore : IEventStore
             });
         }
 
-        await using var command = _unitOfWork.CreateCommand(ct);
+        var transaction = _currentTransactionProvider.GetCurrentTransaction();
+        await using var command = transaction.Connection!.CreateCommand();
 
         command.CommandText = "CALL save_aggregate(@AggregateId, @AggregateType, @ExpectedVersion, @Events)";
 
@@ -55,9 +54,7 @@ public sealed class NpgsqlEventStore : IEventStore
 
     public async Task<IEnumerable<EventDescriptor>> GetEventsUntilDate(Guid aggregateId, DateTimeOffset date, CancellationToken ct = default)
     {
-        await using var connection = await _dbConnectionFactory.CreateConnectionAsync();
-
-        var result = await connection.QueryAsync<EventDescriptor>("""
+        var result = await _currentTransactionProvider.GetCurrentTransaction().Connection!.QueryAsync<EventDescriptor>("""
             SELECT "EventId", "AggregateId", "AggregateType", "EventType", "EventData", "Version", "OccurredOn" FROM "Events"
             WHERE "AggregateId" = @AggregateId AND "OccurredOn" <= @Date ORDER BY "Version" ASC;
             """,

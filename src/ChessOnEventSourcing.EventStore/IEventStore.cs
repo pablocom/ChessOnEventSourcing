@@ -1,4 +1,5 @@
 ﻿using ChessOnEventSourcing.Domain;
+using ChessOnEventSourcing.EventStore.Models;
 
 namespace ChessOnEventSourcing.EventStore;
 

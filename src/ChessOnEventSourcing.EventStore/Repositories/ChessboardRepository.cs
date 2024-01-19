@@ -1,5 +1,5 @@
 ﻿using ChessOnEventSourcing.Domain;
-using System.Runtime.Serialization;
+using ChessOnEventSourcing.EventStore.Models;
 using System.Text.Json;
 
 namespace ChessOnEventSourcing.EventStore.Repositories;
