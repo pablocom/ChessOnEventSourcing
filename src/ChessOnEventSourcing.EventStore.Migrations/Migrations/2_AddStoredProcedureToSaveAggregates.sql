@@ -3,6 +3,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     current_version INT;
+    updated_rows INT;
    	event_record JSON;
 BEGIN
     SELECT a."Version" INTO current_version FROM "Aggregates" a WHERE "AggregateId" = aggregate_id;
@@ -14,7 +15,7 @@ BEGIN
     END IF;
    
     IF expected_version != current_version THEN
-        RAISE EXCEPTION 'Concurrency conflict. Expected version: %, but current version is: %', expected_version, current_version;
+        RAISE EXCEPTION 'Concurrency conflict detected. Expected version: %, but current version is: %', expected_version, current_version;
     END IF;
 
     FOR event_record IN SELECT * FROM json_array_elements(events) LOOP
@@ -34,5 +35,10 @@ BEGIN
     UPDATE "Aggregates"
     SET "Version" = current_version
     WHERE "AggregateId" = aggregate_id AND "Version" = expected_version;
+
+    GET DIAGNOSTICS updated_rows = ROW_COUNT;
+    IF updated_rows = 0 THEN
+        RAISE EXCEPTION 'Concurrency conflict detected. The aggregate version has changed since it was last read.';
+    END IF;
 END;
 $$;
