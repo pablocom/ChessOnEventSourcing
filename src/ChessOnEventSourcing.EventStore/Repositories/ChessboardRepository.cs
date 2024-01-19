@@ -1,4 +1,5 @@
 ﻿using ChessOnEventSourcing.Domain;
+using System.Runtime.Serialization;
 using System.Text.Json;
 
 namespace ChessOnEventSourcing.EventStore.Repositories;
@@ -42,14 +43,15 @@ public sealed class ChessboardRepository : IChessboardRepository
     private static DomainEvent DeserializeEvent(EventDescriptor eventDescriptor)
     {
         var assembly = typeof(ChessboardCreated).Assembly;
+
         var eventType = assembly.GetType(eventDescriptor.EventType);
         if (eventType is null)
             throw new Exception($"Could not find the corresponding CLR type for '{eventDescriptor.EventType}'");
 
-        var deserializedEvent = (DomainEvent) JsonSerializer.Deserialize(eventDescriptor.EventData, eventType, new JsonSerializerOptions
-        {
-            IncludeFields = true,
-        })!;
+        var deserializedEvent = JsonSerializer.Deserialize(eventDescriptor.EventData, eventType) as DomainEvent;
+        if (deserializedEvent is null)
+            throw new Exception($"An error occurred during serialization of event of type {eventType.Name}");
+
         return deserializedEvent;
     }
 }

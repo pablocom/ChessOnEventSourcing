@@ -27,7 +27,7 @@ BEGIN
        		event_record->>'EventType', 
        		(event_record->>'EventData')::jsonb, 
        		current_version, 
-       		event_record->>'OccurredOn'
+       		(event_record->>'OccurredOn')::timestamptz
        	);
     END LOOP;
 

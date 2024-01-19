@@ -1,14 +1,10 @@
 ﻿namespace ChessOnEventSourcing.Domain;
 
-public sealed class ChessboardCreated : DomainEvent
-{
-    public Guid CreatedBy { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
+public sealed record ChessboardCreated(
+    Guid AggregateId, 
+    Guid CreatedBy,
+    DateTimeOffset CreatedAt) : DomainEvent(AggregateId);
 
-    public ChessboardCreated(Guid chessboardId, Guid createdBy, DateTimeOffset createdAt)
-    {
-        AggregateId = chessboardId;
-        CreatedBy = createdBy;
-        CreatedAt = createdAt;
-    }
-}
+public sealed record ChessboardFinished(
+    Guid AggregateId,
+    DateTimeOffset FinishedAt) : DomainEvent(AggregateId);

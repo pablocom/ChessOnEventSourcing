@@ -4,6 +4,7 @@ public sealed class Chessboard : AggregateRoot
 {
     public Guid CreatedBy { get; }
     public DateTimeOffset CreatedAt { get; }
+    public DateTimeOffset? FinishedAt { get; private set; }
 
     public Chessboard(Guid id, Guid createdBy, DateTimeOffset createdAt)
     {
@@ -16,7 +17,21 @@ public sealed class Chessboard : AggregateRoot
 
     public override void Apply(DomainEvent @event)
     {
+        switch (@event)
+        {
+            case ChessboardFinished finished:
+                Apply(finished);
+                break;
+            default:
+                throw new Exception($"No event handler found for event {@event.GetType().Name}");
+        }
+
         Version++;
+    }
+
+    private void Apply(ChessboardFinished finished)
+    {
+        FinishedAt = finished.FinishedAt;
     }
 }
 
