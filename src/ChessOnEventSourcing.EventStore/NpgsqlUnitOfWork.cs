@@ -61,11 +61,8 @@ public sealed class NpgsqlUnitOfWork : IUnitOfWork, IGetCurrentTransaction, IAsy
             await _dbConnection.DisposeAsync();
     }
 
-    public NpgsqlTransaction GetCurrentTransaction()
+    public NpgsqlTransaction? GetCurrentTransaction()
     {
-        if (_dbTransaction is null)
-            throw new InvalidOperationException("No transaction was started");
-
-        return (NpgsqlTransaction) _dbTransaction;
+        return _dbTransaction is null ? null : (NpgsqlTransaction) _dbTransaction;
     }
 }

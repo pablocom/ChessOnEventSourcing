@@ -22,7 +22,7 @@ public sealed class WhenSavingChessboard
         var chessBoardId = Guid.NewGuid();
         var createdBy = Guid.NewGuid();
         var createdAt = new DateTimeOffset(2024, 1, 15, 17, 4, 0, TimeSpan.Zero);
-        var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork));
+        var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
 
         await _unitOfWork.BeginTransaction();
         await repository.Save(new Chessboard(chessBoardId, createdBy, createdAt));
@@ -42,7 +42,7 @@ public sealed class WhenSavingChessboard
         var chessBoardId = Guid.NewGuid();
         var createdBy = Guid.NewGuid();
         var createdAt = new DateTimeOffset(2024, 1, 15, 17, 4, 0, TimeSpan.Zero);
-        var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork));
+        var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
 
         await _unitOfWork.BeginTransaction();
         await repository.Save(new Chessboard(chessBoardId, createdBy, createdAt));
@@ -59,7 +59,7 @@ public sealed class WhenSavingChessboard
         var chessBoardId = Guid.NewGuid();
         var createdBy = Guid.NewGuid();
         var createdAt = new DateTimeOffset(2024, 1, 15, 17, 4, 0, TimeSpan.Zero);
-        var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork));
+        var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
 
         await _unitOfWork.BeginTransaction();
         await repository.Save(new Chessboard(chessBoardId, createdBy, createdAt));

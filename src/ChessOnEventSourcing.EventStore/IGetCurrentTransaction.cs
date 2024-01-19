@@ -4,5 +4,5 @@ namespace ChessOnEventSourcing.EventStore;
 
 public interface IGetCurrentTransaction
 {
-    NpgsqlTransaction GetCurrentTransaction();
+    NpgsqlTransaction? GetCurrentTransaction();
 }

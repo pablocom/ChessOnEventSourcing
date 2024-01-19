@@ -1,44 +1,45 @@
+using ChessOnEventSourcing.Application;
+using ChessOnEventSourcing.Domain;
+using ChessOnEventSourcing.EventStore;
+using ChessOnEventSourcing.EventStore.Repositories;
+using Microsoft.AspNetCore.Mvc;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddSingleton<IDbConnectionFactory>(_ =>
+    new NpgsqlConnectionFactory(builder.Configuration.GetConnectionString("Database")!));
+builder.Services.AddScoped<IEventStore, NpgsqlEventStore>();
+
+builder.Services.AddScoped<NpgsqlUnitOfWork>();
+builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<NpgsqlUnitOfWork>());
+builder.Services.AddScoped<IGetCurrentTransaction>(sp => sp.GetRequiredService<NpgsqlUnitOfWork>());
+builder.Services.AddScoped<IChessboardRepository, ChessboardRepository>();
+builder.Services.AddScoped<IEventStore, NpgsqlEventStore>();
+builder.Services.AddScoped<ChessboardService>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
+app.MapPost("/chessboards", async ([FromServices] ChessboardService chessboardService) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    await chessboardService.CreateChessboard();
+    return Results.Ok();
 })
-.WithName("GetWeatherForecast")
 .WithOpenApi();
 
-app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+app.MapGet("/chessboards/{id:guid}", async (Guid id, [FromServices] IChessboardRepository chessboards) =>
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+    var chessboard = await chessboards.GetBy(id);
+    return Results.Ok(chessboard);
+})
+.WithOpenApi();
+
+await app.RunAsync();

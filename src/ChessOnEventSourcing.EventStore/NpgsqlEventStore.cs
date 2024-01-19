@@ -1,7 +1,9 @@
 ﻿using ChessOnEventSourcing.Domain;
 using ChessOnEventSourcing.EventStore.Models;
 using Dapper;
+using Npgsql;
 using NpgsqlTypes;
+using System.Data.Common;
 using System.Text.Json;
 
 namespace ChessOnEventSourcing.EventStore;
@@ -9,10 +11,12 @@ namespace ChessOnEventSourcing.EventStore;
 public sealed class NpgsqlEventStore : IEventStore
 {
     private readonly IGetCurrentTransaction _currentTransactionProvider;
+    private readonly IDbConnectionFactory _dbConnectionFactory;
 
-    public NpgsqlEventStore(IGetCurrentTransaction currentTransactionProvider)
+    public NpgsqlEventStore(IGetCurrentTransaction currentTransactionProvider, IDbConnectionFactory dbConnectionFactory)
     {
         _currentTransactionProvider = currentTransactionProvider;
+        _dbConnectionFactory = dbConnectionFactory;
     }
 
     public async Task Save(AggregateRoot aggregate, CancellationToken ct = default)
@@ -36,15 +40,23 @@ public sealed class NpgsqlEventStore : IEventStore
             });
         }
 
+        DbConnection? dbConnection;
+
         var transaction = _currentTransactionProvider.GetCurrentTransaction();
-        await using var command = transaction.Connection!.CreateCommand();
+        if (transaction is null)
+            dbConnection = await _dbConnectionFactory.CreateConnectionAsync(ct);
+        else
+            dbConnection = transaction.Connection;
+
+
+        await using var command = dbConnection!.CreateCommand();
 
         command.CommandText = "CALL save_aggregate(@AggregateId, @AggregateType, @ExpectedVersion, @Events)";
 
-        command.Parameters.AddWithValue("AggregateId", aggregate.Id);
-        command.Parameters.AddWithValue("AggregateType", aggregateType);
-        command.Parameters.AddWithValue("ExpectedVersion", aggregate.Version);
-        command.Parameters.AddWithValue("Events", NpgsqlDbType.Json, JsonSerializer.Serialize(eventDescriptors));
+        command.Parameters.Add(new NpgsqlParameter("AggregateId", aggregate.Id));
+        command.Parameters.Add(new NpgsqlParameter("AggregateType", aggregateType));
+        command.Parameters.Add(new NpgsqlParameter("ExpectedVersion", aggregate.Version));
+        command.Parameters.Add(new NpgsqlParameter("Events", JsonSerializer.Serialize(eventDescriptors)) { NpgsqlDbType = NpgsqlDbType.Json });
 
         await using var resultReader = await command.ExecuteReaderAsync(ct);
     }
