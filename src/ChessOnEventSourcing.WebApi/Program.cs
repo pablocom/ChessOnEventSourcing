@@ -28,9 +28,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapPost("/chessboards", async ([FromServices] ChessboardService chessboardService) =>
+app.MapPost("/chessboards/{id:guid}", async (Guid id, [FromServices] ChessboardService chessboardService) =>
 {
-    await chessboardService.CreateChessboard();
+    await chessboardService.CreateChessboard(id);
     return Results.Ok();
 })
 .WithOpenApi();
@@ -39,6 +39,13 @@ app.MapGet("/chessboards/{id:guid}", async (Guid id, [FromServices] IChessboardR
 {
     var chessboard = await chessboards.GetBy(id);
     return Results.Ok(chessboard);
+})
+.WithOpenApi();
+
+app.MapPost("/chessboards/{id:guid}/finish", async (Guid id, [FromServices] ChessboardService chessboardService) =>
+{
+    await chessboardService.Finish(id);
+    return Results.Ok();
 })
 .WithOpenApi();
 

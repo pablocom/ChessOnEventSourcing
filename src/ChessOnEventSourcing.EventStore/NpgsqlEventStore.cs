@@ -22,7 +22,7 @@ public sealed class NpgsqlEventStore : IEventStore
     public async Task Save(AggregateRoot aggregate, CancellationToken ct = default)
     {
         var aggregateType = aggregate.GetType().FullName!;
-        var aggregateEvents = aggregate.DomainEvents;
+        var aggregateEvents = aggregate.Events;
 
         var eventDescriptors = new List<EventDescriptor>(aggregateEvents.Count);
         foreach (var @event in aggregateEvents)

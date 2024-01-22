@@ -2,7 +2,7 @@
 
 public abstract class Entity : IEquatable<Entity>
 {
-    public Guid Id { get; protected init; } = default!;
+    public Guid Id { get; protected init; }
 
     public bool Equals(Entity? other)
     {

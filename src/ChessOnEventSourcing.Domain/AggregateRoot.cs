@@ -4,12 +4,12 @@ public abstract class AggregateRoot : Entity
 {
     public int Version { get; protected set; }
     
-    private readonly List<DomainEvent> _domainEvents = [];
-    public IReadOnlyList<DomainEvent> DomainEvents => _domainEvents.ToArray().AsReadOnly();
+    private readonly List<Event> _events = [];
+    public IReadOnlyList<Event> Events => _events.ToArray().AsReadOnly();
     
-    public void ClearDomainEvents() => _domainEvents.Clear();
-    public abstract void Apply(DomainEvent @event);
+    public void ClearEvents() => _events.Clear();
+    public abstract void Apply(Event @event);
 
-    protected void AddDomainEvent(DomainEvent domainEvent) => _domainEvents.Add(domainEvent);
-    protected void AddDomainEvents(params DomainEvent[] domainEvents) => _domainEvents.AddRange(domainEvents);
+    protected void AddEvent(Event @event) => _events.Add(@event);
+    protected void AddEvents(params Event[] domainEvents) => _events.AddRange(domainEvents);
 }

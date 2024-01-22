@@ -21,9 +21,9 @@ public sealed class ChessboardRepository : IChessboardRepository
         foreach (var @event in events)
         {
             var deserializedEvent = EventDeserializer.Deserialize(@event);
-            if (deserializedEvent is ChessboardCreated chessBoardCreated)
+            if (deserializedEvent is ChessboardCreated created)
             {
-                chessboard = new Chessboard(chessBoardCreated.AggregateId, chessBoardCreated.CreatedBy, chessBoardCreated.CreatedAt);
+                chessboard = Chessboard.From(created);
                 continue;
             }
 

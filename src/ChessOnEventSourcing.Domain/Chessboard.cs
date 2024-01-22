@@ -12,18 +12,32 @@ public sealed class Chessboard : AggregateRoot
         CreatedBy = createdBy;
         CreatedAt = createdAt;
 
-        AddDomainEvent(new ChessboardCreated(Id, CreatedBy, CreatedAt));
+        AddEvent(new ChessboardCreated(Id, CreatedBy, CreatedAt));
     }
 
-    public override void Apply(DomainEvent @event)
+    public void Finish()
+    {
+        FinishedAt = DateTimeOffset.Now;
+        
+        AddEvent(new ChessboardFinished(Id, FinishedAt.Value));
+    }
+    
+    public static Chessboard From(ChessboardCreated created)
+    {
+        var chessboard = new Chessboard(created.AggregateId, created.CreatedBy, created.CreatedAt);
+        
+        chessboard.ClearEvents();
+        chessboard.Version = 1;
+        return chessboard;
+    }
+    
+    public override void Apply(Event @event)
     {
         switch (@event)
         {
             case ChessboardFinished finished:
                 Apply(finished);
                 break;
-            default:
-                throw new Exception($"No event handler found for event {@event.GetType().Name}");
         }
 
         Version++;
