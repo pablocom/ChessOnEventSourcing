@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using ChessOnEventSourcing.Domain;
+using ChessOnEventSourcing.Domain.Events;
 using ChessOnEventSourcing.EventStore.Models;
 
 namespace ChessOnEventSourcing.EventStore.Repositories;

@@ -39,6 +39,7 @@ public sealed class Position : IEquatable<Position>
     }
 }
 
+public sealed class Row : IEquatable<Row>, IComparable<Row>
 {
     public static readonly Row One = new(1);
     public static readonly Row Two = new(2);
@@ -53,6 +54,7 @@ public sealed class Position : IEquatable<Position>
 
     public int Value { get; }
 
+    public Row(int row)
     {
         Value = row;
     }
@@ -60,6 +62,7 @@ public sealed class Position : IEquatable<Position>
     public static bool operator ==(Row left, Row right) => left.Equals(right);
     public static bool operator !=(Row left, Row right) => !left.Equals(right);
 
+    public int CompareTo(Row? other)
     {
         if (other is null)
             return 1;
@@ -67,9 +70,15 @@ public sealed class Position : IEquatable<Position>
         return Value.CompareTo(other.Value);
     }
 
-    {
-    }
 
+    public bool Equals(Row? other)
+    {
+        if (other is null)
+            return false;
+        
+        return Value.Equals(other.Value);
+    }
+    
     public override bool Equals(object? obj)
     {
         if (obj is null)
@@ -81,6 +90,7 @@ public sealed class Position : IEquatable<Position>
     public override int GetHashCode() => Value.GetHashCode();
 }
 
+public sealed class Column : IEquatable<Column>, IComparable<Column>
 {
     public static readonly Column A = new('A');
     public static readonly Column B = new('B');
@@ -104,6 +114,7 @@ public sealed class Position : IEquatable<Position>
     public static bool operator !=(Column left, Column right) => !left.Equals(right);
 
 
+    public int CompareTo(Column? other)
     {
         if (other is null)
             return 1;
@@ -111,6 +122,7 @@ public sealed class Position : IEquatable<Position>
         return Value.CompareTo(other.Value);
     }
 
+    public bool Equals(Column? other)
     {
         if (other is null) 
             return false;
