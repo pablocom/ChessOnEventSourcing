@@ -49,4 +49,11 @@ app.MapPost("/chessboards/{id:guid}/finish", async (Guid id, [FromServices] Ches
 })
 .WithOpenApi();
 
+app.MapPost("/chessboards/{id:guid}/move", async (Guid id, [FromServices] ChessboardService chessboardService) =>
+{
+    await chessboardService.Move(id);
+    return Results.Ok();
+})
+.WithOpenApi();
+
 await app.RunAsync();

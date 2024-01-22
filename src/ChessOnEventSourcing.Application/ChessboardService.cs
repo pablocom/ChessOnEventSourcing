@@ -49,4 +49,24 @@ public sealed class ChessboardService
             throw;
         }
     }
+
+    public async Task Move(Guid id)
+    {
+        try
+        {
+            await _unitOfWork.BeginTransaction();
+
+            var chessboard = await _chessboards.GetBy(id);
+
+            chessboard!.Move(from: Position.At(Column.D, Row.Two), to: Position.At(Column.D, Row.Four));
+            
+            await _chessboards.Save(chessboard);
+            await _unitOfWork.Commit();
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.Rollback();
+            throw;
+        }
+    }
 }
