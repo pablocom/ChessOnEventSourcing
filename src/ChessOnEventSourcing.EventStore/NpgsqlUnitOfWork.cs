@@ -35,7 +35,7 @@ public sealed class NpgsqlUnitOfWork : IUnitOfWork, IDbTransactionProvider, IAsy
     public async Task Rollback(CancellationToken ct = default)
     {
         if (_dbTransaction is null)
-            throw new InvalidOperationException("Cannot rollback because no transaction was opened. A transaction must be open before rollback");
+            return;
 
         await _dbTransaction.RollbackAsync(ct);
     }

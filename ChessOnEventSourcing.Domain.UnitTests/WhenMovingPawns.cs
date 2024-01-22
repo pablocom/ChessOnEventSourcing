@@ -7,6 +7,6 @@ public sealed class WhenMovingPawns
     {
         var chessboard = new Chessboard(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.Now);
 
-        chessboard.Move(from: Position.At(Column.D, Row.Two), to: Position.At(Column.D, Row.Four));
+        chessboard.Move(origin: Position.At(Column.D, Row.Two), destination: Position.At(Column.D, Row.Four));
     }
 }

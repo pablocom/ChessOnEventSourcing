@@ -7,14 +7,18 @@ DECLARE
    	event_record JSON;
 BEGIN
     SELECT a."Version" INTO current_version FROM "Aggregates" a WHERE "AggregateId" = aggregate_id;
-   
+    
     IF current_version IS NULL THEN
         INSERT INTO "Aggregates" ("AggregateId", "AggregateType", "Version")
         VALUES (aggregate_id, aggregate_type, 0);
         current_version := 0;
     END IF;
-   
-    IF expected_version != current_version THEN
+
+    IF expected_version = 0 AND current_version > 0 THEN
+        RAISE EXCEPTION 'An aggregate with the same id already exists in the event store: Id %', aggregate_id;
+    END IF;
+
+    IF expected_version != 0 AND expected_version != current_version THEN
         RAISE EXCEPTION 'Concurrency conflict detected. Expected version: %, but current version is: %', expected_version, current_version;
     END IF;
 

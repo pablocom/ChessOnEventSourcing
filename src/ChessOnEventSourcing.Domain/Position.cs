@@ -1,6 +1,6 @@
 ﻿namespace ChessOnEventSourcing.Domain;
 
-public readonly struct Position : IEquatable<Position>
+public sealed class Position : IEquatable<Position>
 {
     public Column Column { get; } = Column.H;
     public Row Row { get; } = Row.One;
@@ -39,7 +39,6 @@ public readonly struct Position : IEquatable<Position>
     }
 }
 
-public readonly struct Row : IEquatable<Row>, IComparable<Row>
 {
     public static readonly Row One = new(1);
     public static readonly Row Two = new(2);
@@ -54,7 +53,6 @@ public readonly struct Row : IEquatable<Row>, IComparable<Row>
 
     public int Value { get; }
 
-    public Row(int row)
     {
         Value = row;
     }
@@ -62,14 +60,14 @@ public readonly struct Row : IEquatable<Row>, IComparable<Row>
     public static bool operator ==(Row left, Row right) => left.Equals(right);
     public static bool operator !=(Row left, Row right) => !left.Equals(right);
 
-    public int CompareTo(Row other)
     {
+        if (other is null)
+            return 1;
+
         return Value.CompareTo(other.Value);
     }
 
-    public bool Equals(Row other)
     {
-        return Value == other.Value;
     }
 
     public override bool Equals(object? obj)
@@ -83,7 +81,6 @@ public readonly struct Row : IEquatable<Row>, IComparable<Row>
     public override int GetHashCode() => Value.GetHashCode();
 }
 
-public readonly struct Column : IEquatable<Column>, IComparable<Column>
 {
     public static readonly Column A = new('A');
     public static readonly Column B = new('B');
@@ -107,13 +104,17 @@ public readonly struct Column : IEquatable<Column>, IComparable<Column>
     public static bool operator !=(Column left, Column right) => !left.Equals(right);
 
 
-    public int CompareTo(Column other)
     {
+        if (other is null)
+            return 1;
+
         return Value.CompareTo(other.Value);
     }
 
-    public bool Equals(Column other)
     {
+        if (other is null) 
+            return false;
+
         return Value == other.Value;
     }
 
