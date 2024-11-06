@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using ChessOnEventSourcing.Domain.Exceptions;
 using ChessOnEventSourcing.Domain.Pieces;
 using ChessOnEventSourcing.Domain.ValueObjects;
 
@@ -6,29 +7,27 @@ namespace ChessOnEventSourcing.Domain;
 
 public sealed class Chessboard : AggregateRoot
 {
-    public Guid CreatedBy { get; }
     public DateTimeOffset CreatedAt { get; }
     public DateTimeOffset? FinishedAt { get; private set; }
     public Colour? Winner { get; private set; }
     
-    public IReadOnlyList<Piece> KilledPieces => _killedPieces.AsReadOnly();
+    public IReadOnlyList<IReadOnlyPiece> KilledPieces => _killedPieces.AsReadOnly();
 
     private Colour _currentTurnColour = Colour.White;
     private readonly List<Piece> _killedPieces = new();
     private readonly Dictionary<Square, Piece> _pieces = new();
 
-    private Chessboard(Guid id, Guid createdBy, DateTimeOffset createdAt)
+    private Chessboard(Guid id, DateTimeOffset createdAt)
     {
         Id = id;
-        CreatedBy = createdBy;
         CreatedAt = createdAt;
         InitializeAllPieces();
-        AddEvent(new ChessboardCreated(Id, CreatedBy, CreatedAt));
+        AddEvent(new ChessboardCreated(Id, CreatedAt));
     }
 
-    public static Chessboard Create(Guid id, Guid createdBy, DateTimeOffset createdAt) => new Chessboard(id, createdBy, createdAt);
+    public static Chessboard Create(Guid id, DateTimeOffset createdAt) => new(id, createdAt);
 
-    public void Finish()
+    private void Finish()
     {
         FinishedAt = DateTimeOffset.Now;
         AddEvent(new ChessboardFinished(Id, FinishedAt.Value));
@@ -36,7 +35,7 @@ public sealed class Chessboard : AggregateRoot
     
     public static Chessboard From(ChessboardCreated created)
     {
-        var chessboard = new Chessboard(created.AggregateId, created.CreatedBy, created.CreatedAt)
+        var chessboard = new Chessboard(created.AggregateId, created.CreatedAt)
         {
             Version = 1
         };
@@ -46,16 +45,17 @@ public sealed class Chessboard : AggregateRoot
 
     public void Move(Square origin, Square destination)
     {
-        var piece = _pieces[origin];
+        if (!_pieces.TryGetValue(origin, out var piece))
+            throw new NoPieceFoundAtSquareException(origin);
 
         if (piece.Colour != _currentTurnColour)
-            throw new InvalidOperationException("The piece at this square is from a different colour than the current turn");
+            throw new InvalidMoveException("The piece at this square is from a different colour than the current turn");
 
         if (!piece.GetAvailableMoves(_pieces).Contains(destination))
-            throw new InvalidOperationException("Illegal move");
+            throw new InvalidMoveException("Illegal move");
 
         if (IsCheckAfterMovingPieceAt(origin))
-            throw new InvalidOperationException("Illegal move. That move would check the king");
+            throw new InvalidMoveException("Illegal move. That move would check the king");
 
         if (_pieces.TryGetValue(destination, out var killedPiece))
         {
@@ -83,7 +83,7 @@ public sealed class Chessboard : AggregateRoot
     {
         var opponentsKing = _pieces.Values.OfType<King>().First(x => x.Colour == _currentTurnColour.Opposite());
 
-        if (!opponentsKing.IsCheck(_pieces))
+        if (!opponentsKing.IsBeingChecked(_pieces))
             return false;
 
         var opponentPieces = _pieces.Values.Where(p => p.Colour == _currentTurnColour.Opposite());
@@ -119,10 +119,10 @@ public sealed class Chessboard : AggregateRoot
 
         var king = boardCopy.Values.OfType<King>().First(p => p.Colour == _currentTurnColour.Opposite());
 
-        var anyPieceStillChekingTheKing = boardCopy.Values.Where(p => p.Colour == _currentTurnColour)
+        var anyPieceStillCheckingTheKing = boardCopy.Values.Where(p => p.Colour == _currentTurnColour)
             .Any(p => p.GetAvailableMoves(boardCopy).Contains(king.Square));
 
-        return !anyPieceStillChekingTheKing;
+        return !anyPieceStillCheckingTheKing;
     }
 
     private bool IsCheckAfterMovingPieceAt(Square origin)
@@ -154,7 +154,7 @@ public sealed class Chessboard : AggregateRoot
         throw new InvalidOperationException($"No piece found at {square}");
     }
 
-    public bool TryGetPieceAt(Square square, [NotNullWhen(true)] out Piece? piece) => _pieces.TryGetValue(square, out piece);
+    private bool TryGetPieceAt(Square square, [NotNullWhen(true)] out Piece? piece) => _pieces.TryGetValue(square, out piece);
 
     private void InitializeAllPieces()
     {

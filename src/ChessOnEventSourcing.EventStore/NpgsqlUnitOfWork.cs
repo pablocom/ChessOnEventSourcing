@@ -4,7 +4,7 @@ using System.Data.Common;
 
 namespace ChessOnEventSourcing.EventStore;
 
-public sealed class NpgsqlUnitOfWork : IUnitOfWork, INpgsqlTransactionProvider, IAsyncDisposable
+public sealed class NpgsqlUnitOfWork : IUnitOfWork, IDbTransactionProvider, IAsyncDisposable
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private DbConnection? _dbConnection;
@@ -41,7 +41,7 @@ public sealed class NpgsqlUnitOfWork : IUnitOfWork, INpgsqlTransactionProvider, 
     }
 
 
-    public NpgsqlTransaction? GetCurrentTransaction() => _dbTransaction as NpgsqlTransaction;
+    public DbTransaction? GetCurrentTransaction() => _dbTransaction;
 
     public async ValueTask DisposeAsync()
     {

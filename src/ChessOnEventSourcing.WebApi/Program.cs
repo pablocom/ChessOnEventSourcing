@@ -15,7 +15,7 @@ builder.Services.AddScoped<IEventStore, NpgsqlEventStore>();
 
 builder.Services.AddScoped<NpgsqlUnitOfWork>();
 builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<NpgsqlUnitOfWork>());
-builder.Services.AddScoped<INpgsqlTransactionProvider>(sp => sp.GetRequiredService<NpgsqlUnitOfWork>());
+builder.Services.AddScoped<IDbTransactionProvider>(sp => sp.GetRequiredService<NpgsqlUnitOfWork>());
 builder.Services.AddScoped<IChessboardRepository, ChessboardRepository>();
 builder.Services.AddScoped<IEventStore, NpgsqlEventStore>();
 builder.Services.AddScoped<ChessboardService>();
@@ -39,13 +39,6 @@ app.MapGet("/chessboards/{id:guid}", async (Guid id, [FromServices] IChessboardR
 {
     var chessboard = await chessboards.GetBy(id);
     return Results.Ok(chessboard);
-})
-.WithOpenApi();
-
-app.MapPost("/chessboards/{id:guid}/finish", async (Guid id, [FromServices] ChessboardService chessboardService) =>
-{
-    await chessboardService.Finish(id);
-    return Results.Ok();
 })
 .WithOpenApi();
 

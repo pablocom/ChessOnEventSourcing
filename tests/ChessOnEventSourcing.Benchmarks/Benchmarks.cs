@@ -10,7 +10,7 @@ public class Benchmarks
     [Benchmark]
     public void FoolsMate()
     {
-        var chessboard = Chessboard.Create(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.Now);
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.Now);
         
         chessboard.Move(Square.Parse("F2"), Square.Parse("F3"));
         chessboard.Move(Square.Parse("E7"), Square.Parse("E5"));

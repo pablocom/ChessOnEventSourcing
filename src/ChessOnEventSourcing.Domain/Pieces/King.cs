@@ -34,7 +34,7 @@ public sealed class King : Piece
         return moves;
     }
 
-    public bool IsCheck(IReadOnlyDictionary<Square, Piece> board)
+    public bool IsBeingChecked(IReadOnlyDictionary<Square, Piece> board)
     {
         var pieces = board.Values.Where(x => x.Colour == Colour.Opposite()).ToArray();
         

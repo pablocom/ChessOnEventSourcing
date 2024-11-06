@@ -27,14 +27,13 @@ public sealed class WhenSavingChessboard
         var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
 
         await _unitOfWork.BeginTransaction();
-        await repository.Save(Chessboard.Create(chessBoardId, createdBy, createdAt));
+        await repository.Save(Chessboard.Create(chessBoardId, createdAt));
         await _unitOfWork.Commit();
 
         var storedChessboard = await repository.GetBy(chessBoardId);
 
         storedChessboard.Should().NotBeNull();  
         storedChessboard!.Id.Should().Be(chessBoardId);
-        storedChessboard.CreatedBy.Should().Be(createdBy);
         storedChessboard.CreatedAt.Should().Be(createdAt);
         storedChessboard.GetPieceAt(Square.Parse("E2")).Should().BeOfType<Pawn>();
         storedChessboard.Events.Should().BeEmpty();
@@ -49,7 +48,7 @@ public sealed class WhenSavingChessboard
         var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
 
         await _unitOfWork.BeginTransaction();
-        await repository.Save(Chessboard.Create(chessBoardId, createdBy, createdAt));
+        await repository.Save(Chessboard.Create(chessBoardId, createdAt));
         await _unitOfWork.Rollback();
 
         var storedChessboard = await repository.GetBy(chessBoardId);
@@ -66,13 +65,12 @@ public sealed class WhenSavingChessboard
         var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
 
         await _unitOfWork.BeginTransaction();
-        await repository.Save(Chessboard.Create(chessBoardId, createdBy, createdAt));
+        await repository.Save(Chessboard.Create(chessBoardId, createdAt));
 
         var storedChessboard = await repository.GetBy(chessBoardId);
 
         storedChessboard.Should().NotBeNull();
         storedChessboard!.Id.Should().Be(chessBoardId);
-        storedChessboard.CreatedBy.Should().Be(createdBy);
         storedChessboard.CreatedAt.Should().Be(createdAt);
     }
 
@@ -85,8 +83,9 @@ public sealed class WhenSavingChessboard
         var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
 
         await _unitOfWork.BeginTransaction();
-        var cb = Chessboard.Create(chessBoardId, createdBy, createdAt);
-
+        var cb = Chessboard.Create(chessBoardId, createdAt);
+        await _unitOfWork.Commit();
+        
         cb.Move(Square.Parse("E2"), Square.Parse("E4"));
         cb.Move(Square.Parse("E7"), Square.Parse("E5"));
 
@@ -104,7 +103,7 @@ public sealed class WhenSavingChessboard
 
         storedChessboard.Should().NotBeNull();
         storedChessboard!.Id.Should().Be(chessBoardId);
-        storedChessboard.CreatedBy.Should().Be(createdBy);
         storedChessboard.CreatedAt.Should().Be(createdAt);
+        storedChessboard.FinishedAt.Should().HaveValue();
     }
 }

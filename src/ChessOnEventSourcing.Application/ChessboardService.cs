@@ -20,31 +20,12 @@ public sealed class ChessboardService
         {
             await _unitOfWork.BeginTransaction();
 
-            var chessboard = Chessboard.Create(id, Guid.NewGuid(), DateTimeOffset.Now);
+            var chessboard = Chessboard.Create(id, DateTimeOffset.Now);
         
             await _chessboards.Save(chessboard);
             await _unitOfWork.Commit();
         }
-        catch (Exception)
-        {
-            await _unitOfWork.Rollback();
-            throw;
-        }
-    }
-    
-    public async Task Finish(Guid id)
-    {
-        try
-        {
-            await _unitOfWork.BeginTransaction();
-
-            var chessboard = await _chessboards.GetBy(id);
-            chessboard!.Finish();
-            await _chessboards.Save(chessboard);
-            
-            await _unitOfWork.Commit();
-        }
-        catch (Exception)
+        catch
         {
             await _unitOfWork.Rollback();
             throw;

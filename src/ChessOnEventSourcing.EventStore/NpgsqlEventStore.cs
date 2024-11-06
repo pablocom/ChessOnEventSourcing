@@ -10,10 +10,10 @@ namespace ChessOnEventSourcing.EventStore;
 
 public sealed class NpgsqlEventStore : IEventStore
 {
-    private readonly INpgsqlTransactionProvider _transactionProvider;
+    private readonly IDbTransactionProvider _transactionProvider;
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
-    public NpgsqlEventStore(INpgsqlTransactionProvider transactionProvider, IDbConnectionFactory dbConnectionFactory)
+    public NpgsqlEventStore(IDbTransactionProvider transactionProvider, IDbConnectionFactory dbConnectionFactory)
     {
         _transactionProvider = transactionProvider;
         _dbConnectionFactory = dbConnectionFactory;
@@ -22,7 +22,7 @@ public sealed class NpgsqlEventStore : IEventStore
     public async Task Save(AggregateRoot aggregate, CancellationToken ct = default)
     {
         var aggregateType = aggregate.GetType().FullName!;
-        var aggregateEvents = aggregate.Events.Skip(aggregate.Version).ToArray();
+        var aggregateEvents = aggregate.Events.ToArray();
 
         var eventDescriptors = new List<EventDescriptor>(aggregateEvents.Length);
         foreach (var @event in aggregateEvents)
@@ -50,7 +50,7 @@ public sealed class NpgsqlEventStore : IEventStore
         command.Parameters.Add(new NpgsqlParameter("ExpectedVersion", aggregate.Version));
         command.Parameters.Add(new NpgsqlParameter("Events", JsonSerializer.Serialize(eventDescriptors)) { NpgsqlDbType = NpgsqlDbType.Json });
 
-        await using var resultReader = await command.ExecuteReaderAsync(ct);
+        await command.ExecuteNonQueryAsync(ct);
     }
 
     public Task<IEnumerable<EventDescriptor>> GetEventStream(Guid aggregateId, CancellationToken ct = default) 

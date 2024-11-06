@@ -1,7 +1,7 @@
 ﻿using ChessOnEventSourcing.Domain;
 using ChessOnEventSourcing.Domain.ValueObjects;
 
-var foolsMateChessboard = Chessboard.Create(Guid.NewGuid(), Guid.NewGuid(), TimeProvider.System.GetUtcNow());
+var foolsMateChessboard = Chessboard.Create(Guid.NewGuid(), TimeProvider.System.GetUtcNow());
 
 foolsMateChessboard.Move(Square.Parse("E2"), Square.Parse("E4"));
 foolsMateChessboard.Move(Square.Parse("E7"), Square.Parse("E5"));

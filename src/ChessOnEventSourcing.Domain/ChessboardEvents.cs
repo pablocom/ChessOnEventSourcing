@@ -6,7 +6,6 @@ public abstract record Event(Guid AggregateId);
 
 public sealed record ChessboardCreated(
     Guid ChessboardId, 
-    Guid CreatedBy,
     DateTimeOffset CreatedAt) : Event(ChessboardId);
 
 public sealed record ChessboardFinished(
