@@ -24,7 +24,7 @@ public sealed class NpgsqlEventStore : IEventStore
         var aggregateType = aggregate.GetType().FullName!;
         var aggregateEvents = aggregate.Events.ToArray();
 
-        var eventDescriptors = new List<EventDescriptor>(aggregateEvents.Length);
+        var eventDescriptors = new List<EventDescriptor>();
         foreach (var @event in aggregateEvents)
         {
             var eventType = @event.GetType();

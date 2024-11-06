@@ -44,7 +44,7 @@ public sealed class ChessboardTests
         var illegalMove = () => chessboard.Move(Square.Parse("F7"), Square.Parse("F6"));
 
         illegalMove.Should().Throw<InvalidMoveException>()
-            .WithMessage("Illegal move. That move would check the king");
+            .WithMessage("Illegal move");
     }
     
     [Fact]
@@ -100,7 +100,7 @@ public sealed class ChessboardTests
 
         chessboard.GetPieceAt(Square.Parse("D6")).Type.Should().Be(PieceType.Pawn);
         chessboard.GetPieceAt(Square.Parse("D6")).Colour.Should().Be(Colour.White);
-        chessboard.KilledPieces.Should().ContainSingle(p => p.Square.Equals(Square.Parse("D5")));
+        chessboard.GetKilledPieces().Should().ContainSingle(p => p.Square.Equals(Square.Parse("D5")));
     }
 
     [Fact]
