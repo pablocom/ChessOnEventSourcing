@@ -4,17 +4,23 @@ namespace ChessOnEventSourcing.Domain.PieceMoveStrategies;
 
 public sealed class ShortCastleMoveStrategy : IPieceMoveStrategy
 {
-    public bool IsApplicable(Chessboard chessboard, Square origin, Square destination)
+    private readonly Chessboard _chessboard;
+    private readonly Square _origin;
+    private readonly Square _destination;
+
+    public ShortCastleMoveStrategy(Chessboard chessboard, Square origin, Square destination)
+    {
+        _chessboard = chessboard;
+        _origin = origin;
+        _destination = destination;
+    }
+    
+    public bool IsValidMove()
     {
         throw new NotImplementedException();
     }
 
-    public bool IsValidMove(Chessboard chessboard, Square origin, Square destination)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Execute(Chessboard chessboard, Square origin, Square destination)
+    public void Execute()
     {
         throw new NotImplementedException();
     }

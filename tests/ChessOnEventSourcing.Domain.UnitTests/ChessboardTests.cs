@@ -20,7 +20,7 @@ public sealed class ChessboardTests
         ];
 
         foreach (var move in foolsMateSequence)
-            chessboard.Move(move.Origin, move.Destination);
+            chessboard.MovePiece(move.Origin, move.Destination);
 
         chessboard.FinishedAt.Should().NotBeNull();
         chessboard.Winner.Should().Be(Colour.Black);
@@ -39,9 +39,9 @@ public sealed class ChessboardTests
         ];
 
         foreach (var move in movesLeadingToVulnerableKing)
-            chessboard.Move(move.Origin, move.Destination);
+            chessboard.MovePiece(move.Origin, move.Destination);
 
-        var illegalMove = () => chessboard.Move(Square.Parse("F7"), Square.Parse("F6"));
+        var illegalMove = () => chessboard.MovePiece(Square.Parse("F7"), Square.Parse("F6"));
 
         illegalMove.Should().Throw<InvalidMoveException>()
             .WithMessage("Illegal move");
@@ -52,7 +52,7 @@ public sealed class ChessboardTests
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow);
 
-        var illegalMove = () => chessboard.Move(Square.Parse("E3"), Square.Parse("E4"));
+        var illegalMove = () => chessboard.MovePiece(Square.Parse("E3"), Square.Parse("E4"));
 
         illegalMove.Should().Throw<NoPieceFoundAtSquareException>()
             .WithMessage($"No piece has been found at square E3");
@@ -75,7 +75,7 @@ public sealed class ChessboardTests
         ];
 
         foreach (var move in scholarsMateSequence)
-            chessboard.Move(move.Origin, move.Destination);
+            chessboard.MovePiece(move.Origin, move.Destination);
 
         chessboard.FinishedAt.Should().NotBeNull();
         chessboard.Winner.Should().Be(Colour.White);
@@ -86,18 +86,18 @@ public sealed class ChessboardTests
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow);
 
-        (Square Origin, Square Destination)[] enPassantMoves =
+        (Square Origin, Square Destination)[] enPassantPreparationMoves =
         [
             (Square.Parse("E2"), Square.Parse("E4")),
-            (Square.Parse("D7"), Square.Parse("D5")),
+            (Square.Parse("A7"), Square.Parse("A5")),
             (Square.Parse("E4"), Square.Parse("E5")),
-            (Square.Parse("D5"), Square.Parse("D4")),
-            (Square.Parse("E5"), Square.Parse("D6"))
+            (Square.Parse("D7"), Square.Parse("D5"))
         ];
+        foreach (var move in enPassantPreparationMoves)
+            chessboard.MovePiece(move.Origin, move.Destination);
 
-        foreach (var move in enPassantMoves)
-            chessboard.Move(move.Origin, move.Destination);
-
+        chessboard.MovePiece(Square.Parse("E5"), Square.Parse("D6"));
+        
         chessboard.GetPieceAt(Square.Parse("D6")).Type.Should().Be(PieceType.Pawn);
         chessboard.GetPieceAt(Square.Parse("D6")).Colour.Should().Be(Colour.White);
         chessboard.GetKilledPieces().Should().ContainSingle(p => p.Square.Equals(Square.Parse("D5")));
@@ -122,7 +122,7 @@ public sealed class ChessboardTests
         ];
 
         foreach (var move in kingSideCastlingMoves)
-            chessboard.Move(move.Origin, move.Destination);
+            chessboard.MovePiece(move.Origin, move.Destination);
 
         chessboard.GetPieceAt(Square.Parse("G1")).Type.Should().Be(PieceType.King);
         chessboard.GetPieceAt(Square.Parse("F1")).Type.Should().Be(PieceType.Rook);

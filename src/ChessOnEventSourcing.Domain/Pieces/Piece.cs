@@ -3,20 +3,6 @@ using ChessOnEventSourcing.Domain.ValueObjects;
 
 namespace ChessOnEventSourcing.Domain.Pieces;
 
-public enum PieceType
-{
-    Pawn, Rook, Knight, Bishop, Queen, King
-}
-
-public interface IReadOnlyPiece
-{
-    PieceType Type { get; }
-    Square Square { get; }
-    Colour Colour { get; }
-
-    IReadOnlySet<Square> GetAvailableMoves(IReadOnlyDictionary<Square, Piece> board);
-}
-
 public abstract class Piece : Entity, IReadOnlyPiece
 {
     public PieceType Type { get; }

@@ -12,10 +12,10 @@ public class Benchmarks
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.Now);
         
-        chessboard.Move(Square.Parse("F2"), Square.Parse("F3"));
-        chessboard.Move(Square.Parse("E7"), Square.Parse("E5"));
+        chessboard.MovePiece(Square.Parse("F2"), Square.Parse("F3"));
+        chessboard.MovePiece(Square.Parse("E7"), Square.Parse("E5"));
         
-        chessboard.Move(Square.Parse("G2"), Square.Parse("G4"));
-        chessboard.Move(Square.Parse("D8"), Square.Parse("H4"));
+        chessboard.MovePiece(Square.Parse("G2"), Square.Parse("G4"));
+        chessboard.MovePiece(Square.Parse("D8"), Square.Parse("H4"));
     }
 }

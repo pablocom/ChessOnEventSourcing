@@ -6,39 +6,45 @@ namespace ChessOnEventSourcing.Domain.PieceMoveStrategies;
 
 public sealed class NormalPieceMoveStrategy : IPieceMoveStrategy
 {
-    public bool IsApplicable(Chessboard chessboard, Square origin, Square destination)
-    {
-        return true;
-    }
+    private readonly Chessboard _chessboard;
+    private readonly Square _origin;
+    private readonly Square _destination;
 
-    public bool IsValidMove(Chessboard chessboard, Square origin, Square destination)
+    public NormalPieceMoveStrategy(Chessboard chessboard, Square origin, Square destination)
     {
-        var piece = chessboard.Pieces[origin];
-        if (!piece.GetAvailableMoves(chessboard.Pieces).Contains(destination))
+        _chessboard = chessboard;
+        _origin = origin;
+        _destination = destination;
+    }
+    
+    public bool IsValidMove()
+    {
+        var piece = _chessboard.Pieces[_origin];
+        if (!piece.GetAvailableMoves(_chessboard.Pieces).Contains(_destination))
             return false;
         
-        var boardWithPieceMoved = new Dictionary<Square, Piece>(chessboard.Pieces);
+        var boardWithPieceMoved = new Dictionary<Square, Piece>(_chessboard.Pieces);
         
-        var movedPiece = boardWithPieceMoved[origin].CloneWithSquare(destination);
-        boardWithPieceMoved.Remove(origin);
-        movedPiece.MoveTo(destination);
+        var movedPiece = boardWithPieceMoved[_origin].CloneWithSquare(_destination);
+        boardWithPieceMoved.Remove(_origin);
+        movedPiece.MoveTo(_destination);
         boardWithPieceMoved[movedPiece.Square] = movedPiece;
 
-        return CheckFinder.IsCheckFrom(chessboard.CurrentTurnColour.Opposite(), boardWithPieceMoved);
+        return CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), boardWithPieceMoved);
     }
 
-    public void Execute(Chessboard chessboard, Square origin, Square destination)
+    public void Execute()
     {
-        if (chessboard.Pieces.TryGetValue(destination, out var killedPiece))
+        if (_chessboard.Pieces.TryGetValue(_destination, out var killedPiece))
         {
-            chessboard.Pieces.Remove(killedPiece.Square);
-            chessboard.KilledPieces.Add(killedPiece);
+            _chessboard.Pieces.Remove(killedPiece.Square);
+            _chessboard.KilledPieces.Add(killedPiece);
         }
         
-        var piece = chessboard.Pieces[origin];
-        piece.MoveTo(destination);
+        var piece = _chessboard.Pieces[_origin];
+        piece.MoveTo(_destination);
 
-        chessboard.Pieces.Remove(origin);
-        chessboard.Pieces[piece.Square] = piece;
+        _chessboard.Pieces.Remove(_origin);
+        _chessboard.Pieces[piece.Square] = piece;
     }
 }

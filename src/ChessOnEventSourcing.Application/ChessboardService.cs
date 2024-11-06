@@ -40,7 +40,7 @@ public sealed class ChessboardService
 
             var chessboard = await _chessboards.GetBy(id);
 
-            chessboard!.Move(origin: Square.At(Column.D, Row.Two), destination: Square.At(Column.D, Row.Four));
+            chessboard!.MovePiece(origin: Square.At(Column.D, Row.Two), destination: Square.At(Column.D, Row.Four));
             
             await _chessboards.Save(chessboard);
             await _unitOfWork.Commit();

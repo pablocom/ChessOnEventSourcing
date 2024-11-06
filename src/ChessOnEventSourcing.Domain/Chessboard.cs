@@ -13,9 +13,12 @@ public sealed class Chessboard : AggregateRoot
     public DateTimeOffset? FinishedAt { get; private set; }
     public Colour? Winner { get; private set; }
     public Colour CurrentTurnColour { get; private set; } = Colour.White;
+    public IReadOnlyList<Move> Moves => _moves.AsReadOnly();
     
     internal Dictionary<Square, Piece> Pieces { get; } = new();
     internal List<Piece> KilledPieces { get; } = new();
+    
+    private readonly List<Move> _moves = [];
 
     private Chessboard(Guid id, DateTimeOffset createdAt)
     {
@@ -44,7 +47,7 @@ public sealed class Chessboard : AggregateRoot
         return chessboard;
     }
 
-    public void Move(Square origin, Square destination)
+    public void MovePiece(Square origin, Square destination)
     {
         if (!Pieces.TryGetValue(origin, out var piece))
             throw new NoPieceFoundAtSquareException(origin);
@@ -52,13 +55,14 @@ public sealed class Chessboard : AggregateRoot
         if (piece.Colour != CurrentTurnColour)
             throw new InvalidMoveException("The piece at this square is from a different colour than the current turn");
         
-        var moveStrategy = PieceMoveStrategyFactory.Create(this, origin, destination);
+        var moveStrategy = PieceMoveStrategySelector.GetMoveStrategy(this, origin, destination);
         
-        if (moveStrategy.IsValidMove(this, origin, destination))
+        if (moveStrategy.IsValidMove())
             throw new InvalidMoveException("Illegal move");
         
-        moveStrategy.Execute(this, origin, destination);
+        moveStrategy.Execute();
         
+        _moves.Add(new Move(piece.Type, piece.Colour, origin, destination));
         AddEvent(new PieceMoved(Id, piece.Type, origin.Column.Value, origin.Row.Value, destination.Column.Value, destination.Row.Value));
 
         if (IsCheckMate())
@@ -118,7 +122,7 @@ public sealed class Chessboard : AggregateRoot
         throw new InvalidOperationException($"No piece found at {square}");
     }
 
-    private bool TryGetPieceAt(Square square, [NotNullWhen(true)] out Piece? piece) => Pieces.TryGetValue(square, out piece);
+    public bool TryGetPieceAt(Square square, [NotNullWhen(true)] out Piece? piece) => Pieces.TryGetValue(square, out piece);
 
     private void InitializeAllPieces()
     {
@@ -174,6 +178,6 @@ public sealed class Chessboard : AggregateRoot
         var origin = Square.At(pieceMoved.OriginColumn, pieceMoved.OriginRow);
         var destination = Square.At(pieceMoved.DestinationColumn, pieceMoved.DestinationRow);
 
-        Move(origin, destination);
+        MovePiece(origin, destination);
     }
 }

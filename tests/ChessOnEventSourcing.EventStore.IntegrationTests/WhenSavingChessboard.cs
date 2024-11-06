@@ -22,7 +22,6 @@ public sealed class WhenSavingChessboard
     public async Task ItsStoredAndHydratedFromEvents()
     {
         var chessBoardId = Guid.NewGuid();
-        var createdBy = Guid.NewGuid();
         var createdAt = new DateTimeOffset(2024, 1, 15, 17, 4, 0, TimeSpan.Zero);
         var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
 
@@ -60,7 +59,6 @@ public sealed class WhenSavingChessboard
     public async Task RetrievesCurrentTransactionAggregate()
     {
         var chessBoardId = Guid.NewGuid();
-        var createdBy = Guid.NewGuid();
         var createdAt = new DateTimeOffset(2024, 1, 15, 17, 4, 0, TimeSpan.Zero);
         var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
 
@@ -78,7 +76,6 @@ public sealed class WhenSavingChessboard
     public async Task Potato()
     {
         var chessBoardId = Guid.NewGuid();
-        var createdBy = Guid.NewGuid();
         var createdAt = new DateTimeOffset(2024, 1, 15, 17, 4, 0, TimeSpan.Zero);
         var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
 
@@ -86,16 +83,16 @@ public sealed class WhenSavingChessboard
         var cb = Chessboard.Create(chessBoardId, createdAt);
         await _unitOfWork.Commit();
         
-        cb.Move(Square.Parse("E2"), Square.Parse("E4"));
-        cb.Move(Square.Parse("E7"), Square.Parse("E5"));
+        cb.MovePiece(Square.Parse("E2"), Square.Parse("E4"));
+        cb.MovePiece(Square.Parse("E7"), Square.Parse("E5"));
 
-        cb.Move(Square.Parse("D1"), Square.Parse("H5"));
-        cb.Move(Square.Parse("B8"), Square.Parse("C6"));
+        cb.MovePiece(Square.Parse("D1"), Square.Parse("H5"));
+        cb.MovePiece(Square.Parse("B8"), Square.Parse("C6"));
 
-        cb.Move(Square.Parse("F1"), Square.Parse("C4"));
-        cb.Move(Square.Parse("G8"), Square.Parse("F6"));
+        cb.MovePiece(Square.Parse("F1"), Square.Parse("C4"));
+        cb.MovePiece(Square.Parse("G8"), Square.Parse("F6"));
 
-        cb.Move(Square.Parse("H5"), Square.Parse("F7"));
+        cb.MovePiece(Square.Parse("H5"), Square.Parse("F7"));
 
         await repository.Save(cb);
 
