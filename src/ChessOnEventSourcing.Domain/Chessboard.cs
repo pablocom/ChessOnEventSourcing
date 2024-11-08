@@ -24,7 +24,13 @@ public sealed class Chessboard : AggregateRoot
     {
         Id = id;
         CreatedAt = createdAt;
-        InitializeAllPieces();
+        
+        InitializeMajorPieces(Row.One, Colour.White);
+        InitializePawns(Row.Two, Colour.White);
+
+        InitializeMajorPieces(Row.Eight, Colour.Black);
+        InitializePawns(Row.Seven, Colour.Black);
+        
         AddEvent(new ChessboardCreated(Id, CreatedAt));
     }
 
@@ -55,9 +61,9 @@ public sealed class Chessboard : AggregateRoot
         if (piece.Colour != CurrentTurnColour)
             throw new InvalidMoveException("The piece at this square is from a different colour than the current turn");
         
-        var moveStrategy = PieceMoveStrategySelector.GetMoveStrategy(this, origin, destination);
-        
-        if (moveStrategy.IsValidMove())
+        var moveStrategy = MoveStrategyFactory.CreateMoveStrategy(this, origin, destination);
+
+        if (!moveStrategy.IsValidMove())
             throw new InvalidMoveException("Illegal move");
         
         moveStrategy.Execute();
@@ -123,15 +129,6 @@ public sealed class Chessboard : AggregateRoot
     }
 
     public bool TryGetPieceAt(Square square, [NotNullWhen(true)] out Piece? piece) => Pieces.TryGetValue(square, out piece);
-
-    private void InitializeAllPieces()
-    {
-        InitializeMajorPieces(Row.One, Colour.White);
-        InitializePawns(Row.Two, Colour.White);
-
-        InitializeMajorPieces(Row.Eight, Colour.Black);
-        InitializePawns(Row.Seven, Colour.Black);
-    }
 
     private void InitializeMajorPieces(Row row, Colour colour)
     {

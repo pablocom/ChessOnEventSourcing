@@ -7,6 +7,40 @@ namespace ChessOnEventSourcing.Domain.UnitTests;
 public sealed class ChessboardTests
 {
     [Fact]
+    public void CanMovePawnsTwoSquaresFromInitialPosition()
+    {
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow);
+
+        var origin = Square.Parse("D2");
+        var destination = Square.Parse("D4");
+        
+        chessboard.MovePiece(origin, destination);
+
+        var pawn = chessboard.GetPieceAt(destination);
+        pawn.Type.Should().Be(PieceType.Pawn);
+        pawn.Square.Should().Be(destination);
+        pawn.Colour.Should().Be(Colour.White);
+    }
+    
+    [Fact]
+    public void CannotMovePawnTwoSquaresIfThereIsAPieceBlocking()
+    {
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow);
+
+        (Square Origin, Square Destination)[] sequence =
+        [
+            (Square.Parse("G1"), Square.Parse("F3")),
+            (Square.Parse("E7"), Square.Parse("E5"))
+        ];
+        foreach (var move in sequence)
+            chessboard.MovePiece(move.Origin, move.Destination);
+        
+        var act = () => chessboard.MovePiece(Square.Parse("F2"), Square.Parse("F4"));
+        
+        act.Should().Throw<InvalidMoveException>();
+    }
+    
+    [Fact]
     public void IdentifiesFoolsMateCheckmate()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow);
@@ -104,7 +138,32 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void ExecutesKingSideCastlingCorrectly()
+    public void DoesNotAllowEnPassantCaptureIfWouldCheckOwnKing()
+    {
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow);
+
+        (Square Origin, Square Destination)[] enPassantPreparationMoves =
+        [
+            (Square.Parse("E2"), Square.Parse("E4")),
+            (Square.Parse("A7"), Square.Parse("A5")),
+            (Square.Parse("A2"), Square.Parse("A3")),
+            (Square.Parse("A8"), Square.Parse("A6")),
+            (Square.Parse("B2"), Square.Parse("B3")),
+            (Square.Parse("A6"), Square.Parse("E6")),
+            (Square.Parse("E4"), Square.Parse("E5")),
+            (Square.Parse("D7"), Square.Parse("D5"))
+        ];
+        
+        foreach (var move in enPassantPreparationMoves)
+            chessboard.MovePiece(move.Origin, move.Destination);
+
+        var act = () => chessboard.MovePiece(Square.Parse("E5"), Square.Parse("D6"));
+        
+        act.Should().Throw<InvalidMoveException>();
+    }
+    
+    [Fact]
+    public void AllowsShortCastlingForWhite()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow);
 

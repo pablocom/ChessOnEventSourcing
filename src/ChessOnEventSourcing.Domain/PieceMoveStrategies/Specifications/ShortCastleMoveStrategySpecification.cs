@@ -5,7 +5,7 @@ namespace ChessOnEventSourcing.Domain.PieceMoveStrategies.Specifications;
 
 public sealed class ShortCastleMoveStrategySpecification : IMoveStrategySpecification
 {
-    public bool IsApplicableTo(Chessboard chessboard, Square origin, Square destination, PieceType? _ = null)
+    public bool IsSatisfiedBy(Chessboard chessboard, Square origin, Square destination)
     {
         var kingsInitialRow = chessboard.CurrentTurnColour == Colour.White ? Row.One : Row.Eight;
 

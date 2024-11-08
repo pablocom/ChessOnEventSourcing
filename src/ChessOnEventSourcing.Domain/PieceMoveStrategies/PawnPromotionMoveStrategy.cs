@@ -3,7 +3,7 @@ using ChessOnEventSourcing.Domain.ValueObjects;
 
 namespace ChessOnEventSourcing.Domain.PieceMoveStrategies;
 
-public sealed class PawnPromotionMoveStrategy : IPieceMoveStrategy
+public sealed class PawnPromotionMoveStrategy : IMoveStrategy
 {
     private readonly Chessboard _chessboard;
     private readonly Square _origin;

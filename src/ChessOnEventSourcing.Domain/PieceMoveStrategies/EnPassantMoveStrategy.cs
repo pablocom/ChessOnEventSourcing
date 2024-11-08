@@ -4,7 +4,7 @@ using ChessOnEventSourcing.Domain.ValueObjects;
 
 namespace ChessOnEventSourcing.Domain.PieceMoveStrategies;
 
-public sealed class EnPassantMoveStrategy : IPieceMoveStrategy
+public sealed class EnPassantMoveStrategy : IMoveStrategy
 {
     private readonly Chessboard _chessboard;
     private readonly Square _origin;
@@ -19,21 +19,12 @@ public sealed class EnPassantMoveStrategy : IPieceMoveStrategy
     
     public bool IsValidMove()
     {
-        var piece = _chessboard.Pieces[_origin];
-        if (!piece.GetAvailableMoves(_chessboard.Pieces).Contains(_destination))
-            return false;
+        var simulatedBoardAfterMove = new Dictionary<Square, Piece>(_chessboard.Pieces);
         
-        var boardWithPieceMoved = new Dictionary<Square, Piece>(_chessboard.Pieces);
-        
-        var movedPiece = boardWithPieceMoved[_origin].CloneWithSquare(_destination);
-        boardWithPieceMoved.Remove(_origin);
-        movedPiece.MoveTo(_destination);
-        boardWithPieceMoved[movedPiece.Square] = movedPiece;
-        
-        var capturedPawnSquare = Square.At(_destination.Column, _origin.Row);
-        boardWithPieceMoved.Remove(capturedPawnSquare);
-        
-        return CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), boardWithPieceMoved);
+        MovePiece(simulatedBoardAfterMove);
+        RemoveCapturedPawn(simulatedBoardAfterMove);
+
+        return !CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), simulatedBoardAfterMove);
     }
 
     public void Execute()
@@ -46,5 +37,19 @@ public sealed class EnPassantMoveStrategy : IPieceMoveStrategy
         pawn.MoveTo(_destination);
         _chessboard.Pieces.Remove(_origin);
         _chessboard.Pieces[pawn.Square] = pawn;
+    }
+    
+    private void MovePiece(Dictionary<Square, Piece> simulatedBoardBeforeMove)
+    {
+        var movedPiece = simulatedBoardBeforeMove[_origin].CloneWithSquare(_destination);
+        simulatedBoardBeforeMove.Remove(_origin);
+        movedPiece.MoveTo(_destination);
+        simulatedBoardBeforeMove[movedPiece.Square] = movedPiece;
+    }
+    
+    private void RemoveCapturedPawn(Dictionary<Square, Piece> simulatedBoardBeforeMove)
+    {
+        var capturedPawnSquare = Square.At(_destination.Column, _origin.Row);
+        simulatedBoardBeforeMove.Remove(capturedPawnSquare);
     }
 }

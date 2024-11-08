@@ -5,12 +5,11 @@ namespace ChessOnEventSourcing.Domain.PieceMoveStrategies.Specifications;
 
 public sealed class EnPassantMoveStrategySpecification : IMoveStrategySpecification
 {
-    public bool IsApplicableTo(Chessboard chessboard, Square origin, Square destination, PieceType? _ = null)
+    public bool IsSatisfiedBy(Chessboard chessboard, Square origin, Square destination)
     {
         var enPassantRow = chessboard.CurrentTurnColour == Colour.White ? Row.Five : Row.Four;
         
-        if (!chessboard.TryGetPieceAt(origin, out var piece))
-            return false;
+        var piece = chessboard.GetPieceAt(origin);
         
         if (piece.Type is not PieceType.Pawn) 
             return false;
@@ -18,24 +17,31 @@ public sealed class EnPassantMoveStrategySpecification : IMoveStrategySpecificat
         if (origin.Row != enPassantRow) 
             return false;
         
-        var opponentPawnStartRow = chessboard.CurrentTurnColour == Colour.White ? Row.Seven : Row.Two;
-
-        if (!chessboard.Moves.Any())
+        return LastMoveWasEligiblePawnAdvanceForEnPassant(chessboard, enPassantRow) 
+               && IsDiagonalMove(chessboard, origin, destination, enPassantRow);
+    }
+    
+    private static bool LastMoveWasEligiblePawnAdvanceForEnPassant(Chessboard chessboard, Row enPassantRow)
+    {
+        if (chessboard.Moves.Count is 0)
             return false;
         
         var lastMove = chessboard.Moves[^1];
-        if (lastMove.PieceType != PieceType.Pawn || lastMove.Colour != chessboard.CurrentTurnColour.Opposite()) 
+        
+        if (lastMove.PieceType != PieceType.Pawn) 
             return false;
         
-        if (lastMove.Origin.Row != opponentPawnStartRow || lastMove.Destination.Row != enPassantRow) 
-            return false;
+        var opponentPawnStartRow = chessboard.CurrentTurnColour == Colour.White ? Row.Seven : Row.Two;
+        
+        return lastMove.Origin.Row == opponentPawnStartRow && lastMove.Destination.Row == enPassantRow;
+    }
+    
+    private static bool IsDiagonalMove(Chessboard chessboard, Square origin, Square destination, Row enPassantRow)
+    {
+        var pawnDirection = chessboard.CurrentTurnColour == Colour.White ? 1 : -1;
 
-        var pawnDirection = chessboard.CurrentTurnColour == Colour.White ? 1 : -1; 
         var isDiagonalMove = (origin.Column == destination.Column.Add(1) || origin.Column == destination.Column.Add(-1))
                              && destination.Row == enPassantRow.Add(pawnDirection);
-        if (!isDiagonalMove) 
-            return false;
-        
-        return !chessboard.TryGetPieceAt(destination, out var _);
+        return isDiagonalMove;
     }
 }

@@ -2,7 +2,7 @@ using ChessOnEventSourcing.Domain.ValueObjects;
 
 namespace ChessOnEventSourcing.Domain.PieceMoveStrategies;
 
-public sealed class ShortCastleMoveStrategy : IPieceMoveStrategy
+public sealed class ShortCastleMoveStrategy : IMoveStrategy
 {
     private readonly Chessboard _chessboard;
     private readonly Square _origin;

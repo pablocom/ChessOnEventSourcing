@@ -1,6 +1,6 @@
 namespace ChessOnEventSourcing.Domain.PieceMoveStrategies;
 
-public interface IPieceMoveStrategy
+public interface IMoveStrategy
 {
     bool IsValidMove();
     void Execute();

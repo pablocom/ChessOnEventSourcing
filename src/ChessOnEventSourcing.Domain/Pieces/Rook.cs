@@ -27,7 +27,7 @@ public sealed class Rook : Piece
     {
         var nextSquare = Square;
 
-        while (!Square.WouldOverflowAddingRow(direction))
+        while (!nextSquare.WouldOverflowAddingRow(direction))
         {
             nextSquare = nextSquare.AddRows(direction);
                     
@@ -47,7 +47,7 @@ public sealed class Rook : Piece
     {
         var nextSquare = Square;
 
-        while (!Square.WouldOverflowAddingColumn(direction))
+        while (!nextSquare.WouldOverflowAddingColumn(direction))
         {
             nextSquare = nextSquare.AddColumns(direction);
                     

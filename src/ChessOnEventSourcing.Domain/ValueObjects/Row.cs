@@ -18,7 +18,7 @@ public readonly struct Row : IEquatable<Row>, IComparable<Row>
     private Row(int row)
     {
         if (row is < 1 or > 8)
-            throw new ArgumentNullException(nameof(row));
+            throw new ArgumentOutOfRangeException(nameof(row));
         
         Value = row;
     }
@@ -28,7 +28,7 @@ public readonly struct Row : IEquatable<Row>, IComparable<Row>
         if (row is < 1 or > 8)
             throw new ArgumentOutOfRangeException(nameof(row));
 
-        return new Row(row);
+        return All[row - 1];
     }
 
     public Row Add(int offset) => All[Value - 1 + offset];

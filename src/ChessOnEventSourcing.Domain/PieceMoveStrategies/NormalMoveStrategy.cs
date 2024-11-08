@@ -4,13 +4,13 @@ using ChessOnEventSourcing.Domain.ValueObjects;
 
 namespace ChessOnEventSourcing.Domain.PieceMoveStrategies;
 
-public sealed class NormalPieceMoveStrategy : IPieceMoveStrategy
+public sealed class NormalMoveStrategy : IMoveStrategy
 {
     private readonly Chessboard _chessboard;
     private readonly Square _origin;
     private readonly Square _destination;
 
-    public NormalPieceMoveStrategy(Chessboard chessboard, Square origin, Square destination)
+    public NormalMoveStrategy(Chessboard chessboard, Square origin, Square destination)
     {
         _chessboard = chessboard;
         _origin = origin;
@@ -23,14 +23,12 @@ public sealed class NormalPieceMoveStrategy : IPieceMoveStrategy
         if (!piece.GetAvailableMoves(_chessboard.Pieces).Contains(_destination))
             return false;
         
-        var boardWithPieceMoved = new Dictionary<Square, Piece>(_chessboard.Pieces);
+        var simulatedBoardAfterMove = new Dictionary<Square, Piece>(_chessboard.Pieces);
         
-        var movedPiece = boardWithPieceMoved[_origin].CloneWithSquare(_destination);
-        boardWithPieceMoved.Remove(_origin);
-        movedPiece.MoveTo(_destination);
-        boardWithPieceMoved[movedPiece.Square] = movedPiece;
+        MovePiece(simulatedBoardAfterMove);
 
-        return CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), boardWithPieceMoved);
+        var oppositeColour = _chessboard.CurrentTurnColour.Opposite();
+        return !CheckFinder.IsCheckFrom(oppositeColour, simulatedBoardAfterMove);
     }
 
     public void Execute()
@@ -46,5 +44,13 @@ public sealed class NormalPieceMoveStrategy : IPieceMoveStrategy
 
         _chessboard.Pieces.Remove(_origin);
         _chessboard.Pieces[piece.Square] = piece;
+    }
+    
+    private void MovePiece(Dictionary<Square, Piece> simulatedBoardBeforeMove)
+    {
+        var movedPiece = simulatedBoardBeforeMove[_origin].CloneWithSquare(_destination);
+        simulatedBoardBeforeMove.Remove(_origin);
+        movedPiece.MoveTo(_destination);
+        simulatedBoardBeforeMove[movedPiece.Square] = movedPiece;
     }
 }
