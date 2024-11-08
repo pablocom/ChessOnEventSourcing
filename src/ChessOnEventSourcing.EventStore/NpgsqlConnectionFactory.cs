@@ -7,7 +7,7 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
 {
     private readonly string _connectionString;
 
-    public NpgsqlConnectionFactory(string connectionString)
+    public NpgsqlConnectionFactory(string? connectionString)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 

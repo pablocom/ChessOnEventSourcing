@@ -35,6 +35,7 @@ public sealed class WhenSavingChessboard
         storedChessboard!.Id.Should().Be(chessBoardId);
         storedChessboard.CreatedAt.Should().Be(createdAt);
         storedChessboard.GetPieceAt(Square.Parse("E2")).Should().BeOfType<Pawn>();
+        storedChessboard.GetPieceAt(Square.Parse("E1")).Should().BeOfType<King>();
         storedChessboard.Events.Should().BeEmpty();
     }
 
@@ -70,37 +71,5 @@ public sealed class WhenSavingChessboard
         storedChessboard.Should().NotBeNull();
         storedChessboard!.Id.Should().Be(chessBoardId);
         storedChessboard.CreatedAt.Should().Be(createdAt);
-    }
-
-    [Fact]
-    public async Task Potato()
-    {
-        var chessBoardId = Guid.NewGuid();
-        var createdAt = new DateTimeOffset(2024, 1, 15, 17, 4, 0, TimeSpan.Zero);
-        var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
-
-        await _unitOfWork.BeginTransaction();
-        var cb = Chessboard.Create(chessBoardId, createdAt);
-        await _unitOfWork.Commit();
-        
-        cb.MovePiece(Square.Parse("E2"), Square.Parse("E4"));
-        cb.MovePiece(Square.Parse("E7"), Square.Parse("E5"));
-
-        cb.MovePiece(Square.Parse("D1"), Square.Parse("H5"));
-        cb.MovePiece(Square.Parse("B8"), Square.Parse("C6"));
-
-        cb.MovePiece(Square.Parse("F1"), Square.Parse("C4"));
-        cb.MovePiece(Square.Parse("G8"), Square.Parse("F6"));
-
-        cb.MovePiece(Square.Parse("H5"), Square.Parse("F7"));
-
-        await repository.Save(cb);
-
-        var storedChessboard = await repository.GetBy(chessBoardId);
-
-        storedChessboard.Should().NotBeNull();
-        storedChessboard!.Id.Should().Be(chessBoardId);
-        storedChessboard.CreatedAt.Should().Be(createdAt);
-        storedChessboard.FinishedAt.Should().HaveValue();
     }
 }

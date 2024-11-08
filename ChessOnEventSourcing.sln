@@ -28,8 +28,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChessOnEventSourcing.Domain
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChessOnEventSourcing.Benchmarks", "tests\ChessOnEventSourcing.Benchmarks\ChessOnEventSourcing.Benchmarks.csproj", "{9CFFCC87-2A6B-499F-9A9B-76178247CF1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessOnEventSourcing.ConsoleApp", "src\ChessOnEventSourcing.ConsoleApp\ChessOnEventSourcing.ConsoleApp.csproj", "{04D0A35C-6CC6-4EE4-BCC6-301E02E27818}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -68,10 +66,6 @@ Global
 		{9CFFCC87-2A6B-499F-9A9B-76178247CF1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CFFCC87-2A6B-499F-9A9B-76178247CF1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CFFCC87-2A6B-499F-9A9B-76178247CF1A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{04D0A35C-6CC6-4EE4-BCC6-301E02E27818}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{04D0A35C-6CC6-4EE4-BCC6-301E02E27818}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{04D0A35C-6CC6-4EE4-BCC6-301E02E27818}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{04D0A35C-6CC6-4EE4-BCC6-301E02E27818}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -85,7 +79,6 @@ Global
 		{83E6A7BA-FC24-4D7B-85DD-44F82E86282B} = {169A689E-2DF1-40AA-8339-FD00A4BD5866}
 		{828045A8-9B73-4387-A6D9-2F52086D7958} = {169A689E-2DF1-40AA-8339-FD00A4BD5866}
 		{9CFFCC87-2A6B-499F-9A9B-76178247CF1A} = {169A689E-2DF1-40AA-8339-FD00A4BD5866}
-		{04D0A35C-6CC6-4EE4-BCC6-301E02E27818} = {1E547AE3-C558-43A9-8FBE-E934E2FC25C8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8612D619-3381-4DFC-9CAB-94C708900DFF}

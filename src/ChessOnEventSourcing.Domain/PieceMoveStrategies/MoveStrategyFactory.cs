@@ -8,8 +8,8 @@ public static class MoveStrategyFactory
 {
     private static readonly (IMoveStrategySpecification Specification, Func<Chessboard, Square, Square, IMoveStrategy> Strategy)[] Strategies =
     [
-        (new ShortCastleMoveStrategySpecification(), (chessboard, origin, dest) => new ShortCastleMoveStrategy(chessboard, origin, dest)),
-        (new LongCastleMoveStrategySpecification(), (chessboard, origin, dest) => new LongCastleMoveStrategy(chessboard, origin, dest)),
+        (new ShortCastleMoveStrategySpecification(), (chessboard, origin, dest) => new ShortCastleMoveStrategy(chessboard)),
+        (new LongCastleMoveStrategySpecification(), (chessboard, origin, dest) => new LongCastleMoveStrategy(chessboard)),
         (new EnPassantMoveStrategySpecification(), (chessboard, origin, dest) => new EnPassantMoveStrategy(chessboard, origin, dest)),
         (new NormalMoveStrategySpecification(), (chessboard, origin, dest) => new NormalMoveStrategy(chessboard, origin, dest)),
     ];

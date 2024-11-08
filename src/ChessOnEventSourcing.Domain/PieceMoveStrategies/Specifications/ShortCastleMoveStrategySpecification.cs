@@ -18,16 +18,11 @@ public sealed class ShortCastleMoveStrategySpecification : IMoveStrategySpecific
         if (piece.Type != PieceType.King || piece.Colour != chessboard.CurrentTurnColour)
             return false;
 
-        var kingMovedPreviously = chessboard.Moves.Any(m => m.Colour == chessboard.CurrentTurnColour && m.PieceType == PieceType.King);
-        if (kingMovedPreviously)
-            return false;
-
         var rookPosition = Square.At(Column.H, kingsInitialRow);
         if (!chessboard.TryGetPieceAt(rookPosition, out var rook) || rook.Type != PieceType.Rook || rook.Colour != chessboard.CurrentTurnColour)
             return false;
 
-        var rookMovedPreviously = chessboard.Moves.Any(m => m.Colour == chessboard.CurrentTurnColour && m.PieceType == PieceType.Rook && m.Origin == rookPosition);
-        return !rookMovedPreviously;
+        return true;
     }
 
     private static bool IsShortCastleMove(Square origin, Square destination, Row kingsInitialRow)

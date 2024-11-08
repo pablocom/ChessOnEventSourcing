@@ -1,18 +1,12 @@
-using ChessOnEventSourcing.Domain.ValueObjects;
-
 namespace ChessOnEventSourcing.Domain.PieceMoveStrategies;
 
 public sealed class LongCastleMoveStrategy : IMoveStrategy
 {
     private readonly Chessboard _chessboard;
-    private readonly Square _origin;
-    private readonly Square _destination;
 
-    public LongCastleMoveStrategy(Chessboard chessboard, Square origin, Square destination)
+    public LongCastleMoveStrategy(Chessboard chessboard)
     {
         _chessboard = chessboard;
-        _origin = origin;
-        _destination = destination;
     }
     
     public bool IsValidMove()

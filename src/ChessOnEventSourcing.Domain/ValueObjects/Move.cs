@@ -27,4 +27,8 @@ public readonly struct Move : IEquatable<Move>
     public override bool Equals(object? obj) => obj is Move other && Equals(other);
 
     public override int GetHashCode() => HashCode.Combine(PieceType, Origin, Destination);
+
+    public static bool operator ==(Move left, Move right) => left.Equals(right);
+
+    public static bool operator !=(Move left, Move right) => !(left == right);
 }

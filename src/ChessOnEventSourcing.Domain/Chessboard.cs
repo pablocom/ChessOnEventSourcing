@@ -120,7 +120,7 @@ public sealed class Chessboard : AggregateRoot
 
     private void SwitchTurn() => CurrentTurnColour = CurrentTurnColour.Opposite();
     
-    public IReadOnlyPiece GetPieceAt(Square square)
+    public Piece GetPieceAt(Square square)
     {
         if (TryGetPieceAt(square, out var piece))
             return piece;
