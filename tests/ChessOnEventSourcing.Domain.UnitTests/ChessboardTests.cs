@@ -13,7 +13,7 @@ public sealed class ChessboardTests
     {
         var origin = Square.Parse("D2");
         var destination = Square.Parse("D4");
-        
+
         _chessboard.MovePiece(origin, destination);
 
         var pawn = _chessboard.GetPieceAt(destination);
@@ -21,7 +21,7 @@ public sealed class ChessboardTests
         pawn.Square.Should().Be(destination);
         pawn.Colour.Should().Be(Colour.White);
     }
-    
+
     [Fact]
     public void CannotMovePawnTwoSquaresIfThereIsAPieceBlocking()
     {
@@ -32,12 +32,12 @@ public sealed class ChessboardTests
         ];
         foreach (var move in sequence)
             _chessboard.MovePiece(move.Origin, move.Destination);
-        
+
         var act = () => _chessboard.MovePiece(Square.Parse("F2"), Square.Parse("F4"));
-        
+
         act.Should().Throw<InvalidMoveException>();
     }
-    
+
     [Fact]
     public void IdentifiesFoolsMateCheckmate()
     {
@@ -74,7 +74,7 @@ public sealed class ChessboardTests
         illegalMove.Should().Throw<InvalidMoveException>()
             .WithMessage("Illegal move");
     }
-    
+
     [Fact]
     public void ThrowsIfNoPieceWasFoundAtOriginSquare()
     {
@@ -119,7 +119,7 @@ public sealed class ChessboardTests
             _chessboard.MovePiece(move.Origin, move.Destination);
 
         _chessboard.MovePiece(Square.Parse("E5"), Square.Parse("D6"));
-        
+
         _chessboard.GetPieceAt(Square.Parse("D6")).Type.Should().Be(PieceType.Pawn);
         _chessboard.GetPieceAt(Square.Parse("D6")).Colour.Should().Be(Colour.White);
         _chessboard.GetKilledPieces().Should().ContainSingle(p => p.Square.Equals(Square.Parse("D5")));
@@ -139,20 +139,20 @@ public sealed class ChessboardTests
             (Square.Parse("E4"), Square.Parse("E5")),
             (Square.Parse("D7"), Square.Parse("D5"))
         ];
-        
+
         foreach (var move in enPassantPreparationMoves)
             _chessboard.MovePiece(move.Origin, move.Destination);
 
         var act = () => _chessboard.MovePiece(Square.Parse("E5"), Square.Parse("D6"));
-        
+
         act.Should().Throw<InvalidMoveException>();
     }
-    
+
     [Fact]
     public void AllowsShortCastlingForWhite()
     {
         var whiteKingSideCastling = (Square.Parse("E1"), Square.Parse("G1"));
-        
+
         (Square Origin, Square Destination)[] kingSideCastlingMoves =
         [
             (Square.Parse("G2"), Square.Parse("G3")),
@@ -243,15 +243,59 @@ public sealed class ChessboardTests
         foreach (var move in moveSequence)
             _chessboard.MovePiece(move.Origin, move.Destination);
 
+        var act = () => _chessboard.MovePiece(Square.Parse("E1"), Square.Parse("G1"));
+
+        act.Should().Throw<InvalidMoveException>();
+    }
+
+    [Fact]
+    public void DoesNotAllowToCastleIfWouldResultInCheck()
+    {
+        var pieces = MatrixToPiecesMapper.Map(
+        [
+            [' ', ' ', ' ', ' ', 'k', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', 'p', 'p', 'p'],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', 'b', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', 'P', 'P', 'P', 'P'],
+            ['r', ' ', ' ', ' ', 'K', ' ', ' ', 'R']
+        ]);
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, pieces);
+
         var act = () =>
         {
-            _chessboard.MovePiece(Square.Parse("E1"), Square.Parse("G1"));
+            chessboard.MovePiece(Square.Parse("E1"), Square.Parse("G1"));
         };
 
         act.Should().Throw<InvalidMoveException>();
     }
 
-    // TODO: does not allow to castle if would result in check
+    [Fact]
+    public void DoesNotAllowToCastleIfAnyPieceIsTargetingSquaresBetweenRookAndKing()
+    {
+        var pieces = MatrixToPiecesMapper.Map(
+        [
+            [' ', ' ', ' ', ' ', 'k', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', 'b', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', 'P', 'P', 'P'],
+            [' ', ' ', ' ', ' ', 'K', ' ', ' ', 'R']
+        ]);
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, pieces);
+
+        var act = () =>
+        {
+            chessboard.MovePiece(Square.Parse("E1"), Square.Parse("G1"));
+        };
+
+        act.Should().Throw<InvalidMoveException>();
+    }
+
     // TODO: does not allow to castle if any piece is targeting squares between root and king
     // TODO: does not allow to castle if is check
 }

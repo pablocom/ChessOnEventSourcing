@@ -68,6 +68,22 @@ public readonly struct Column : IEquatable<Column>, IComparable<Column>
 
     public override string ToString() => Value.ToString();
 
+    public static Column From(int number)
+    {
+        return number switch
+        {
+            1 => A,
+            2 => B,
+            3 => C,
+            4 => D,
+            5 => E,
+            6 => F,
+            7 => G,
+            8 => H,
+            _ => throw new ArgumentOutOfRangeException(nameof(number))
+        };
+    }
+
     public static bool operator <(Column left, Column right) => left.CompareTo(right) < 0;
 
     public static bool operator <=(Column left, Column right) => left.CompareTo(right) <= 0;

@@ -15,7 +15,7 @@ public sealed class Chessboard : AggregateRoot
     public Colour CurrentTurnColour { get; private set; } = Colour.White;
     public IReadOnlyList<Move> Moves => _moves.AsReadOnly();
     
-    internal Dictionary<Square, Piece> Pieces { get; } = new();
+    internal Dictionary<Square, Piece> Pieces { get; }
     internal List<Piece> KilledPieces { get; } = new();
     
     private readonly List<Move> _moves = [];
@@ -24,33 +24,45 @@ public sealed class Chessboard : AggregateRoot
     {
         Id = id;
         CreatedAt = createdAt;
-        
+        Pieces = new();
+
         InitializeMajorPieces(Row.One, Colour.White);
         InitializePawns(Row.Two, Colour.White);
 
         InitializeMajorPieces(Row.Eight, Colour.Black);
         InitializePawns(Row.Seven, Colour.Black);
-        
+
         AddEvent(new ChessboardCreated(Id, CreatedAt));
     }
 
+    private Chessboard(Guid id, DateTimeOffset createdAt, Colour currentTurnColour, IReadOnlyDictionary<Square, Piece> pieces)
+    {
+        Id = id;
+        CreatedAt = createdAt;
+        CurrentTurnColour = currentTurnColour;
+        Pieces = new Dictionary<Square, Piece>(pieces);
+
+        if (CheckFinder.IsCheckFrom(CurrentTurnColour, Pieces))
+            throw new InvalidOperationException("Cannot create a chess game where the current turn colour is checking the king");
+
+        if (CheckFinder.IsCheckMateFrom(currentTurnColour.Opposite(), Pieces))
+            Finish(createdAt, winner: currentTurnColour.Opposite());
+    }
+
     public static Chessboard Create(Guid id, DateTimeOffset createdAt) => new(id, createdAt);
-    
+
+    public static Chessboard Create(Guid id, DateTimeOffset createdAt, Colour currentTurnColour, IReadOnlyDictionary<Square, Piece> pieces)
+    {
+        return new(id, createdAt, currentTurnColour, pieces);
+    }
+
     public IReadOnlyList<IReadOnlyPiece> GetKilledPieces() => KilledPieces.AsReadOnly();
 
-    private void Finish()
+    private void Finish(DateTimeOffset finishedAt, Colour winner)
     {
-        FinishedAt = DateTimeOffset.Now;
+        FinishedAt = finishedAt;
+        Winner = winner;
         AddEvent(new ChessboardFinished(Id, FinishedAt.Value));
-    }
-    
-    public static Chessboard From(ChessboardCreated created)
-    {
-        var chessboard = new Chessboard(created.AggregateId, created.CreatedAt)
-        {
-            Version = 1
-        };
-        return chessboard;
     }
 
     public void MovePiece(Square origin, Square destination)
@@ -71,51 +83,10 @@ public sealed class Chessboard : AggregateRoot
         _moves.Add(new Move(piece.Type, piece.Colour, origin, destination));
         AddEvent(new PieceMoved(Id, piece.Type, origin.Column.Value, origin.Row.Value, destination.Column.Value, destination.Row.Value));
 
-        if (IsCheckMate())
-        {
-            Winner = CurrentTurnColour;
-            Finish();
-        }
+        if (CheckFinder.IsCheckMateFrom(CurrentTurnColour, Pieces))
+            Finish(DateTimeOffset.UtcNow, winner: CurrentTurnColour);
         else
-        {
             SwitchTurn();
-        }        
-    }
-
-    private bool IsCheckMate()
-    {
-        if (!CheckFinder.IsCheckFrom(CurrentTurnColour, Pieces))
-            return false;
-
-        var opponentPieces = Pieces.Values.Where(p => p.Colour == CurrentTurnColour.Opposite());
-        foreach (var piece in opponentPieces)
-        {
-            var possibleMoves = piece.GetAvailableMoves(Pieces);
-
-            if (possibleMoves.Any(destination => MoveAvoidsCheck(piece, destination)))
-                return false;
-        }
-
-        return true;
-    }
-
-    private bool MoveAvoidsCheck(Piece piece, Square destination)
-    {
-        var boardCopy = new Dictionary<Square, Piece>(Pieces);
-        boardCopy.Remove(piece.Square);
-        
-        if (boardCopy.TryGetValue(destination, out var targetPiece))
-        {
-            if (targetPiece.Colour == piece.Colour)
-                return false;
-            
-            boardCopy.Remove(destination);
-        }
-        
-        var movedPiece = piece.CloneWithSquare(destination);
-        boardCopy.Add(movedPiece.Square, movedPiece);
-        
-        return !CheckFinder.IsCheckFrom(CurrentTurnColour, boardCopy);
     }
 
     private void SwitchTurn() => CurrentTurnColour = CurrentTurnColour.Opposite();
@@ -149,7 +120,16 @@ public sealed class Chessboard : AggregateRoot
             Pieces.Add(Square.At(column, row), new Pawn(Square.At(column, row), colour));
         }
     }
-    
+
+    public static Chessboard From(ChessboardCreated created)
+    {
+        var chessboard = new Chessboard(created.AggregateId, created.CreatedAt)
+        {
+            Version = 1
+        };
+        return chessboard;
+    }
+
     public override void Apply(Event @event)
     {
         switch (@event)
