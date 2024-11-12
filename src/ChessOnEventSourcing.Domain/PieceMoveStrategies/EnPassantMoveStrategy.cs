@@ -19,10 +19,7 @@ public sealed class EnPassantMoveStrategy : IMoveStrategy
     
     public bool IsValidMove()
     {
-        var simulatedBoardAfterMove = new Dictionary<Square, Piece>(_chessboard.Pieces);
-        
-        MovePiece(simulatedBoardAfterMove);
-        RemoveCapturedPawn(simulatedBoardAfterMove);
+        var simulatedBoardAfterMove = SimulateMove();
 
         return !CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), simulatedBoardAfterMove);
     }
@@ -38,18 +35,17 @@ public sealed class EnPassantMoveStrategy : IMoveStrategy
         _chessboard.Pieces.Remove(_origin);
         _chessboard.Pieces[pawn.Square] = pawn;
     }
-    
-    private void MovePiece(Dictionary<Square, Piece> simulatedBoardBeforeMove)
+
+    private Dictionary<Square, Piece> SimulateMove()
     {
-        var movedPiece = simulatedBoardBeforeMove[_origin].CloneWithSquare(_destination);
-        simulatedBoardBeforeMove.Remove(_origin);
-        movedPiece.MoveTo(_destination);
-        simulatedBoardBeforeMove[movedPiece.Square] = movedPiece;
-    }
-    
-    private void RemoveCapturedPawn(Dictionary<Square, Piece> simulatedBoardBeforeMove)
-    {
+        var simulatedBoardAfterMove = new Dictionary<Square, Piece>(_chessboard.Pieces);
+
+        var movedPiece = simulatedBoardAfterMove[_origin].CloneWithSquare(_destination);
+        simulatedBoardAfterMove.Remove(_origin);
+        
+        simulatedBoardAfterMove[movedPiece.Square] = movedPiece;
         var capturedPawnSquare = Square.At(_destination.Column, _origin.Row);
-        simulatedBoardBeforeMove.Remove(capturedPawnSquare);
+        simulatedBoardAfterMove.Remove(capturedPawnSquare);
+        return simulatedBoardAfterMove;
     }
 }

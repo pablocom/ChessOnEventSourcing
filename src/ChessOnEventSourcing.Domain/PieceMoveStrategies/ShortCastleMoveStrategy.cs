@@ -62,20 +62,21 @@ public sealed class ShortCastleMoveStrategy : IMoveStrategy
 
     private bool AnyPieceTargetingSquaresBetweenKingAndRook()
     {
+        var initialKingRow = _chessboard.CurrentTurnColour == Colour.White ? Row.One : Row.Eight;
         var opponentPieces = _chessboard.Pieces.Values.Where(x => x.Colour == _chessboard.CurrentTurnColour.Opposite());
 
         foreach (var piece in opponentPieces)
         {
             var availableMoves = piece.GetAvailableMoves(_chessboard.Pieces);
 
-            if (availableMoves.Contains(Square.Parse("F1")) || availableMoves.Contains(Square.Parse("G1")))
+            if (availableMoves.Contains(Square.At(Column.F, initialKingRow)) ||
+                availableMoves.Contains(Square.At(Column.G, initialKingRow)))
                 return true;
         }
 
         return false;
     }
-
-
+    
     private Dictionary<Square, Piece> SimulateBoardAfterShortCastle()
     {
         var boardCopy = new Dictionary<Square, Piece>(_chessboard.Pieces);
