@@ -1,6 +1,6 @@
 services:
     database:
-        image: postgres:16.1
+        image: postgres:15.2
         container_name: chess_on_event_sourcing_database
         environment:
             - POSTGRES_USER=postgres
