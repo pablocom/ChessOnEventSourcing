@@ -74,50 +74,6 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void AllowsEnPassantCapture()
-    {
-        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(
-        [
-            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
-            ['p', 'p', ' ', 'p', 'p', 'p', 'p', 'p'],
-            [' ', ' ', 'p', ' ', ' ', ' ', ' ', ' '],
-            ['q', ' ', ' ', ' ', 'P', ' ', ' ', ' '],
-            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-            [' ', ' ', ' ', ' ', ' ', 'N', ' ', ' '],
-            ['P', 'P', 'P', 'P', ' ', 'P', 'P', 'P'],
-            ['R', 'N', 'B', 'Q', 'K', 'B', ' ', 'R']
-        ]));
-        chessboard.MovePiece(Square.Parse("D7"), Square.Parse("D5"));
-
-        chessboard.MovePiece(Square.Parse("E5"), Square.Parse("D6"));
-
-        chessboard.GetPieceAt(Square.Parse("D6")).Type.Should().Be(PieceType.Pawn);
-        chessboard.GetPieceAt(Square.Parse("D6")).Colour.Should().Be(Colour.White);
-        chessboard.GetKilledPieces().Should().ContainSingle(p => p.Square.Equals(Square.Parse("D5")));
-    }
-
-    [Fact]
-    public void DoesNotAllowEnPassantCaptureIfWouldCheckOwnKing()
-    {
-        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(
-        [
-            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
-            ['p', 'p', ' ', 'p', 'q', 'p', 'p', 'p'],
-            [' ', ' ', 'p', ' ', ' ', ' ', ' ', ' '],
-            ['q', ' ', ' ', ' ', 'P', ' ', ' ', ' '],
-            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-            [' ', ' ', ' ', ' ', ' ', 'N', ' ', ' '],
-            ['P', 'P', 'P', 'P', ' ', 'P', 'P', 'P'],
-            ['R', 'N', 'B', 'Q', 'K', 'B', ' ', 'R']
-        ]));
-        chessboard.MovePiece(Square.Parse("D7"), Square.Parse("D5"));
-
-        var act = () => chessboard.MovePiece(Square.Parse("E5"), Square.Parse("D6"));
-
-        act.Should().Throw<InvalidMoveException>();
-    }
-
-    [Fact]
     public void AllowsShortCastlingForWhite()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(
@@ -232,7 +188,7 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void DoesNotAllowToCastleIfAnyPieceIsTargetingSquaresBetweenRookAndKing()
+    public void DoesNotAllowWhiteToCastleIfAnyPieceIsTargetingSquaresBetweenRookAndKing()
     {
         var pieces = MatrixToPiecesMapper.Map(
         [
@@ -255,10 +211,96 @@ public sealed class ChessboardTests
         act.Should().Throw<InvalidMoveException>();
     }
 
-    // TODO: does not allow to capture en passant if last move was not from pawn
-    // TODO: does not allow to castle if any piece is targeting squares between root and king
-    // TODO: does not allow to castle if is check
-    
+    [Fact]
+    public void DoesNotAllowBlackToCastleIfAnyPieceIsTargetingSquaresBetweenRookAndKing()
+    {
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(
+        [
+            [' ', ' ', ' ', ' ', 'k', ' ', ' ', 'r'],
+            [' ', ' ', ' ', ' ', ' ', 'p', 'p', 'p'],
+            [' ', ' ', ' ', 'B', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', 'P', 'P', 'P'],
+            [' ', ' ', ' ', ' ', 'K', ' ', ' ', 'R']
+        ]));
+
+        var act = () =>
+        {
+            chessboard.MovePiece(Square.Parse("E8"), Square.Parse("G8"));
+        };
+
+        act.Should().Throw<InvalidMoveException>();
+    }
+
+    [Fact]
+    public void DoesNotAllowToCastleIfItsCheck()
+    {
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, MatrixToPiecesMapper.Map(
+        [
+            [' ', ' ', ' ', ' ', 'r', ' ', 'k', ' '],
+            [' ', ' ', ' ', ' ', ' ', 'p', 'p', 'p'],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', 'P', 'P', 'P'],
+            [' ', ' ', ' ', ' ', 'K', ' ', ' ', 'R']
+        ]));
+
+        var act = () =>
+        {
+            chessboard.MovePiece(Square.Parse("E1"), Square.Parse("G1"));
+        };
+
+        act.Should().Throw<InvalidMoveException>();
+    }
+
+    [Fact]
+    public void AllowsEnPassantCapture()
+    {
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(
+        [
+            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+            ['p', 'p', ' ', 'p', 'p', 'p', 'p', 'p'],
+            [' ', ' ', 'p', ' ', ' ', ' ', ' ', ' '],
+            ['q', ' ', ' ', ' ', 'P', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', 'N', ' ', ' '],
+            ['P', 'P', 'P', 'P', ' ', 'P', 'P', 'P'],
+            ['R', 'N', 'B', 'Q', 'K', 'B', ' ', 'R']
+        ]));
+        chessboard.MovePiece(Square.Parse("D7"), Square.Parse("D5"));
+
+        chessboard.MovePiece(Square.Parse("E5"), Square.Parse("D6"));
+
+        chessboard.GetPieceAt(Square.Parse("D6")).Type.Should().Be(PieceType.Pawn);
+        chessboard.GetPieceAt(Square.Parse("D6")).Colour.Should().Be(Colour.White);
+        chessboard.GetKilledPieces().Should().ContainSingle(p => p.Square.Equals(Square.Parse("D5")));
+    }
+
+    [Fact]
+    public void DoesNotAllowEnPassantCaptureIfWouldCheckOwnKing()
+    {
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(
+        [
+            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+            ['p', 'p', ' ', 'p', 'q', 'p', 'p', 'p'],
+            [' ', ' ', 'p', ' ', ' ', ' ', ' ', ' '],
+            ['q', ' ', ' ', ' ', 'P', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', 'N', ' ', ' '],
+            ['P', 'P', 'P', 'P', ' ', 'P', 'P', 'P'],
+            ['R', 'N', 'B', 'Q', 'K', 'B', ' ', 'R']
+        ]));
+        chessboard.MovePiece(Square.Parse("D7"), Square.Parse("D5"));
+
+        var act = () => chessboard.MovePiece(Square.Parse("E5"), Square.Parse("D6"));
+
+        act.Should().Throw<InvalidMoveException>();
+    }
+
     [Fact]
     public void RecognizesFoolsMate()
     {

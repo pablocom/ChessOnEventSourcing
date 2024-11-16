@@ -24,7 +24,10 @@ public sealed class ShortCastleMoveStrategy : IMoveStrategy
         if (AnyPieceTargetingSquaresBetweenKingAndRook())
             return false;
 
-        if (CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), SimulateBoardAfterShortCastle()))
+        if (CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), _chessboard.Pieces))
+            return false;
+        
+        if (CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), BuildSimulatedBoardAfterShortCastle()))
             return false;
         
         return true;
@@ -77,7 +80,7 @@ public sealed class ShortCastleMoveStrategy : IMoveStrategy
         return false;
     }
     
-    private Dictionary<Square, Piece> SimulateBoardAfterShortCastle()
+    private Dictionary<Square, Piece> BuildSimulatedBoardAfterShortCastle()
     {
         var boardCopy = new Dictionary<Square, Piece>(_chessboard.Pieces);
 
@@ -94,10 +97,10 @@ public sealed class ShortCastleMoveStrategy : IMoveStrategy
         boardCopy.Remove(initialKingSquare);
         boardCopy.Remove(initialRookSquare);
 
-        king.CloneWithSquare(kingDestination);
-        rook.CloneWithSquare(rookDestination);
-        boardCopy.Add(king.Square, king);
-        boardCopy.Add(rook.Square, rook);
+        var kingClone = king.CloneWithSquare(kingDestination);
+        var rookClone = rook.CloneWithSquare(rookDestination);
+        boardCopy.Add(kingClone.Square, kingClone);
+        boardCopy.Add(rookClone.Square, rookClone);
 
         return boardCopy;
     }

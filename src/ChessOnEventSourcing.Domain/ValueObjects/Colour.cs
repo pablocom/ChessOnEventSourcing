@@ -28,4 +28,6 @@ public sealed class Colour : IEquatable<Colour>
     public override bool Equals(object? obj) => ReferenceEquals(this, obj) || obj is Colour other && Equals(other);
 
     public override int GetHashCode() => _colour.GetHashCode();
+
+    public override string ToString() => _colour;
 }
