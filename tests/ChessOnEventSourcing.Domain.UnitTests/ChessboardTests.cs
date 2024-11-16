@@ -43,7 +43,7 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void ThrowsIfMoveResultsInOwnKingBeingInCheck()
+    public void DoesNotAllowMoveIfResultsInOwnKingBeingInCheck()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, MatrixToPiecesMapper.Map(
         [
@@ -63,11 +63,12 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void ThrowsIfNoPieceWasFoundAtOriginSquare()
-    {
+    public void DoesNotAllowMoveIfNoPieceIsFoundAtSquare()
+    { 
+        var initiallyEmptySquare = Square.Parse("E3");
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow);
         
-        var illegalMove = () => chessboard.MovePiece(Square.Parse("E3"), Square.Parse("E4"));
+        var illegalMove = () => chessboard.MovePiece(initiallyEmptySquare, Square.Parse("E4"));
 
         illegalMove.Should().Throw<NoPieceFoundAtSquareException>()
             .WithMessage("No piece has been found at square E3");
@@ -141,7 +142,7 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void DoesNotAllowShortCastlingIfRookHasMovedAlready()
+    public void DoesNotAllowShortCastlingIfRookHasMoved()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, MatrixToPiecesMapper.Map(
         [
@@ -295,6 +296,27 @@ public sealed class ChessboardTests
             ['R', 'N', 'B', 'Q', 'K', 'B', ' ', 'R']
         ]));
         chessboard.MovePiece(Square.Parse("D7"), Square.Parse("D5"));
+
+        var act = () => chessboard.MovePiece(Square.Parse("E5"), Square.Parse("D6"));
+
+        act.Should().Throw<InvalidMoveException>();
+    }
+    
+    [Fact]
+    public void DoesNotAllowEnPassantIfLastMoveWasNotFromThatPawn()
+    {
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(
+        [
+            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+            ['p', 'p', ' ', ' ', 'q', 'p', 'p', 'p'],
+            [' ', ' ', 'p', ' ', ' ', ' ', ' ', ' '],
+            ['q', ' ', ' ', 'p', 'P', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', 'N', ' ', ' '],
+            ['P', 'P', 'P', 'P', ' ', 'P', 'P', 'P'],
+            ['R', 'N', 'B', 'Q', 'K', 'B', ' ', 'R']
+        ]));
+        chessboard.MovePiece(Square.Parse("G7"), Square.Parse("G5"));
 
         var act = () => chessboard.MovePiece(Square.Parse("E5"), Square.Parse("D6"));
 
