@@ -59,17 +59,17 @@ public sealed class WhenSavingChessboard
     [Fact]
     public async Task RetrievesCurrentTransactionAggregate()
     {
-        var chessBoardId = Guid.NewGuid();
+        var chessboardId = Guid.NewGuid();
         var createdAt = new DateTimeOffset(2024, 1, 15, 17, 4, 0, TimeSpan.Zero);
         var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
 
         await _unitOfWork.BeginTransaction();
-        await repository.Save(Chessboard.Create(chessBoardId, createdAt));
+        await repository.Save(Chessboard.Create(chessboardId, createdAt));
 
-        var storedChessboard = await repository.GetBy(chessBoardId);
+        var storedChessboard = await repository.GetBy(chessboardId);
 
         storedChessboard.Should().NotBeNull();
-        storedChessboard!.Id.Should().Be(chessBoardId);
+        storedChessboard!.Id.Should().Be(chessboardId);
         storedChessboard.CreatedAt.Should().Be(createdAt);
     }
 }
