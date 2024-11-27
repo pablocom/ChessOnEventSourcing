@@ -43,7 +43,6 @@ public sealed class WhenSavingChessboard
     public async Task ItsNotStoredOnTransactionRollback()
     {
         var chessBoardId = Guid.NewGuid();
-        var createdBy = Guid.NewGuid();
         var createdAt = new DateTimeOffset(2024, 1, 15, 17, 4, 0, TimeSpan.Zero);
         var repository = new ChessboardRepository(new NpgsqlEventStore(_unitOfWork, _connectionFactory));
 
