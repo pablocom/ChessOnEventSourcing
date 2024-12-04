@@ -189,7 +189,7 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void DoesNotAllowWhiteToCastleIfAnyPieceIsTargetingSquaresBetweenRookAndKing()
+    public void DoesNotAllowWhiteToShortCastleIfAnyPieceIsTargetingSquaresBetweenRookAndKing()
     {
         var pieces = MatrixToPiecesMapper.Map(
         [
@@ -213,7 +213,7 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void DoesNotAllowBlackToCastleIfAnyPieceIsTargetingSquaresBetweenRookAndKing()
+    public void DoesNotAllowBlackToShortCastleIfAnyPieceIsTargetingSquaresBetweenRookAndKing()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(
         [
@@ -276,8 +276,9 @@ public sealed class ChessboardTests
 
         chessboard.MovePiece(Square.Parse("E5"), Square.Parse("D6"));
 
-        chessboard.GetPieceAt(Square.Parse("D6")).Type.Should().Be(PieceType.Pawn);
-        chessboard.GetPieceAt(Square.Parse("D6")).Colour.Should().Be(Colour.White);
+        var pawn = chessboard.GetPieceAt(Square.Parse("D6"));
+        pawn.Type.Should().Be(PieceType.Pawn);
+        pawn.Colour.Should().Be(Colour.White);
         chessboard.GetKilledPieces().Should().ContainSingle(p => p.Square.Equals(Square.Parse("D5")));
     }
 

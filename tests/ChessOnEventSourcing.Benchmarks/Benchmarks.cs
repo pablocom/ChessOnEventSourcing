@@ -4,7 +4,8 @@ using ChessOnEventSourcing.Domain.ValueObjects;
 
 namespace ChessOnEventSourcing.Benchmarks;
 
-[MemoryDiagnoser(true)]
+[MemoryDiagnoser]
+[ShortRunJob]
 public class Benchmarks
 {
     [Benchmark]
