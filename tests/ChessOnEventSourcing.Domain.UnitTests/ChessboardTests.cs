@@ -325,6 +325,105 @@ public sealed class ChessboardTests
     }
 
     [Fact]
+    public void AllowsLongCastlingForWhite()
+    {
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, MatrixToPiecesMapper.Map(
+        [
+            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+            ['p', 'p', ' ', ' ', 'q', 'p', 'p', 'p'],
+            [' ', ' ', 'p', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', 'p', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', 'P', ' ', ' ', ' '],
+            [' ', 'P', 'N', 'P', ' ', 'N', ' ', ' '],
+            ['P', 'B', 'P', 'Q', ' ', 'P', 'P', 'P'],
+            ['R', ' ', ' ', ' ', 'K', 'B', ' ', 'R']
+        ]));
+        
+        chessboard.MovePiece(Square.Parse("E1"), Square.Parse("C1"));
+
+        var king = chessboard.GetPieceAt(Square.Parse("C1"));
+        king.Type.Should().Be(PieceType.King);
+        king.Colour.Should().Be(Colour.White);
+        
+        var rook = chessboard.GetPieceAt(Square.Parse("D1"));
+        rook.Type.Should().Be(PieceType.Rook);
+        rook.Colour.Should().Be(Colour.White);
+    }
+    
+    [Fact]
+    public void AllowsLongCastlingForBlack()
+    {
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(
+        [
+            ['r', ' ', ' ', ' ', 'k', 'b', 'n', 'r'],
+            ['p', 'p', ' ', 'q', 'q', 'p', 'p', 'p'],
+            [' ', ' ', 'p', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', 'p', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', 'P', ' ', ' ', ' '],
+            [' ', 'P', 'N', 'P', ' ', 'N', ' ', ' '],
+            ['P', 'B', 'P', 'Q', ' ', 'P', 'P', 'P'],
+            ['R', ' ', ' ', ' ', 'K', 'B', ' ', 'R']
+        ]));
+        
+        chessboard.MovePiece(Square.Parse("E8"), Square.Parse("C8"));
+
+        var king = chessboard.GetPieceAt(Square.Parse("C8"));
+        king.Type.Should().Be(PieceType.King);
+        king.Colour.Should().Be(Colour.Black);
+        
+        var rook = chessboard.GetPieceAt(Square.Parse("D8"));
+        rook.Type.Should().Be(PieceType.Rook);
+        rook.Colour.Should().Be(Colour.Black);
+    }
+
+    [Fact]
+    public void DoesNotAllowLongCastlingIfKingHasMovedAlready()
+    {
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, MatrixToPiecesMapper.Map(
+        [
+            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+            ['p', 'p', ' ', ' ', 'q', 'p', 'p', 'p'],
+            [' ', ' ', 'p', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', 'p', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', 'P', ' ', ' ', ' '],
+            [' ', 'P', 'N', 'P', ' ', 'N', ' ', ' '],
+            ['P', 'B', 'P', 'Q', ' ', 'P', 'P', 'P'],
+            ['R', ' ', ' ', ' ', 'K', 'B', ' ', 'R']
+        ]));
+        chessboard.MovePiece(Square.Parse("E1"), Square.Parse("D1"));
+        chessboard.MovePiece(Square.Parse("A7"), Square.Parse("A5"));
+        chessboard.MovePiece(Square.Parse("D1"), Square.Parse("E1"));
+        
+        var act = () => chessboard.MovePiece(Square.Parse("E1"), Square.Parse("C1"));
+
+        act.Should().Throw<InvalidMoveException>();
+    }
+    
+    [Fact]
+    public void DoesNotAllowLongCastlingIfRookHasMovedAlready()
+    {
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, MatrixToPiecesMapper.Map(
+        [
+            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+            ['p', 'p', ' ', ' ', 'q', 'p', 'p', 'p'],
+            [' ', ' ', 'p', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', 'p', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', 'P', ' ', ' ', ' '],
+            [' ', 'P', 'N', 'P', ' ', 'N', ' ', ' '],
+            ['P', 'B', 'P', 'Q', ' ', 'P', 'P', 'P'],
+            ['R', ' ', ' ', ' ', 'K', 'B', ' ', 'R']
+        ]));
+        chessboard.MovePiece(Square.Parse("A1"), Square.Parse("D1"));
+        chessboard.MovePiece(Square.Parse("A7"), Square.Parse("A5"));
+        chessboard.MovePiece(Square.Parse("D1"), Square.Parse("A1"));
+        chessboard.MovePiece(Square.Parse("B7"), Square.Parse("B6"));
+        
+        var act = () => chessboard.MovePiece(Square.Parse("E1"), Square.Parse("C1"));
+
+        act.Should().Throw<InvalidMoveException>();
+    }
+    
+    [Fact]
     public void RecognizesFoolsMate()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow);

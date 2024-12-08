@@ -15,19 +15,13 @@ public sealed class ShortCastleMoveStrategy : IMoveStrategy
     
     public bool IsValidMove()
     {
-        if (KingHasMovedAlready())
-            return false;
-        
-        if (RookHasMovedAlready())
-            return false;
-
-        if (AnyPieceTargetingSquaresBetweenKingAndRook())
+        if (KingHasMovedAlready() ||
+            RookHasMovedAlready() ||
+            AnyPieceTargetingSquaresBetweenKingAndRook())
             return false;
 
-        if (CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), _chessboard.Pieces))
-            return false;
-        
-        if (CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), BuildSimulatedBoardAfterShortCastle()))
+        if (CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), _chessboard.Pieces) ||
+            CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), BuildSimulatedBoardAfterShortCastle()))
             return false;
         
         return true;
