@@ -1,33 +1,23 @@
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace ChessOnEventSourcing.EventStore.Migrations;
 
 public sealed class EventStoreDbMigratorHostedService : IHostedLifecycleService
 {
     private readonly EventStoreDbMigrator _eventStoreDbMigrator;
-    private readonly ILogger<EventStoreDbMigratorHostedService> _logger;
-    private readonly IHostApplicationLifetime _applicationHostLifetime;
+    private readonly IHostApplicationLifetime _hostLifetime;
 
-    public EventStoreDbMigratorHostedService(
-        EventStoreDbMigrator eventStoreDbMigrator, 
-        ILogger<EventStoreDbMigratorHostedService> logger,
-        IHostApplicationLifetime applicationHostLifetime)
+    public EventStoreDbMigratorHostedService(EventStoreDbMigrator eventStoreDbMigrator, IHostApplicationLifetime hostLifetime)
     {
         _eventStoreDbMigrator = eventStoreDbMigrator;
-        _logger = logger;
-        _applicationHostLifetime = applicationHostLifetime;
+        _hostLifetime = hostLifetime;
     }
     
-    public async Task StartAsync(CancellationToken cancellationToken)
-    {
-        
-        await _eventStoreDbMigrator.Migrate(cancellationToken);
-    }
+    public async Task StartAsync(CancellationToken cancellationToken) => await _eventStoreDbMigrator.Migrate(cancellationToken);
 
     public Task StartedAsync(CancellationToken cancellationToken)
     {
-        _applicationHostLifetime.StopApplication();
+        _hostLifetime.StopApplication();
         return Task.CompletedTask;
     }
 
