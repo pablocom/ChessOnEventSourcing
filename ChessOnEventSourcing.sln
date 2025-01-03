@@ -18,6 +18,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F0440F95-B391-4359-B9F7-1B2A29CA6FD5}"
 	ProjectSection(SolutionItems) = preProject
 		docker-compose.yml = docker-compose.yml
+		Directory.Packages.props = Directory.Packages.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChessOnEventSourcing.EventStore.IntegrationTests", "tests\ChessOnEventSourcing.EventStore.IntegrationTests\ChessOnEventSourcing.EventStore.IntegrationTests.csproj", "{83E6A7BA-FC24-4D7B-85DD-44F82E86282B}"
