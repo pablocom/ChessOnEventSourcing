@@ -207,6 +207,72 @@ public sealed class ChessboardTests
     }
 
     [Fact]
+    public void AllowsWhiteToShortCastleIfPieceIsTargetingSquaresBetweenRookOriginAndDestinationButNoTheKingOnes()
+    {
+        var pieces = MatrixToPiecesMapper.Map(
+        [
+            [' ', ' ', ' ', ' ', 'k', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', 'b', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', 'P', ' '],
+            [' ', ' ', ' ', ' ', ' ', 'P', ' ', 'P'],
+            [' ', ' ', ' ', ' ', 'K', ' ', ' ', 'R']
+        ]);
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, pieces);
+        
+        chessboard.MovePiece(Square.Parse("E1"), Square.Parse("G1"));
+        
+        chessboard.GetPieceAt(Square.Parse("G1")).Type.Should().Be(PieceType.King);
+        chessboard.GetPieceAt(Square.Parse("F1")).Type.Should().Be(PieceType.Rook);
+    }
+    
+    [Fact]
+    public void AllowsBlackToShortCastleIfPieceIsTargetingSquaresBetweenRookOriginAndDestinationButNoTheKingOnes()
+    {
+        var pieces = MatrixToPiecesMapper.Map(
+        [
+            [' ', ' ', ' ', ' ', 'k', ' ', ' ', 'r'],
+            [' ', ' ', ' ', ' ', ' ', 'p', ' ', 'p'],
+            [' ', ' ', ' ', ' ', ' ', ' ', 'p', ' '],
+            [' ', ' ', ' ', ' ', 'B', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', 'K', ' ', ' ', ' ']
+        ]);
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, pieces);
+        
+        chessboard.MovePiece(Square.Parse("E8"), Square.Parse("G8"));
+        
+        chessboard.GetPieceAt(Square.Parse("G8")).Type.Should().Be(PieceType.King);
+        chessboard.GetPieceAt(Square.Parse("F8")).Type.Should().Be(PieceType.Rook);
+    }
+
+    [Fact]
+    public void AllowsWhiteToLongCastleIfAnyPieceIsTargetingSquaresBetweenRookOriginAndDestinationButNoTheKingOnes()
+    {
+        var pieces = MatrixToPiecesMapper.Map(
+        [
+            [' ', ' ', ' ', ' ', 'k', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            ['b', 'P', 'P', 'P', ' ', ' ', ' ', ' '],
+            ['R', ' ', ' ', ' ', 'K', ' ', ' ', ' ']
+        ]);
+        var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, pieces);
+
+        chessboard.MovePiece(Square.Parse("E1"), Square.Parse("C1"));
+        
+        chessboard.GetPieceAt(Square.Parse("C1")).Type.Should().Be(PieceType.King);
+        chessboard.GetPieceAt(Square.Parse("D1")).Type.Should().Be(PieceType.Rook);
+    }
+    
+    [Fact]
     public void DoesNotAllowBlackToShortCastleIfAnyPieceIsTargetingSquaresBetweenRookAndKing()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(

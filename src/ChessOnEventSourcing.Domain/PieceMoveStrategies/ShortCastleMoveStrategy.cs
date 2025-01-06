@@ -17,7 +17,7 @@ public sealed class ShortCastleMoveStrategy : IMoveStrategy
     {
         if (KingHasMovedAlready() ||
             RookHasMovedAlready() ||
-            AnyPieceTargetingSquaresBetweenKingAndRook())
+            AnyPieceTargetingSquaresBetweenKingOriginAndDestination())
             return false;
 
         if (CheckFinder.IsCheckFrom(_chessboard.CurrentTurnColour.Opposite(), _chessboard.Pieces) ||
@@ -57,7 +57,7 @@ public sealed class ShortCastleMoveStrategy : IMoveStrategy
         return _chessboard.Moves.Any(x => x.Colour == _chessboard.CurrentTurnColour && x.PieceType is PieceType.Rook);
     }
 
-    private bool AnyPieceTargetingSquaresBetweenKingAndRook()
+    private bool AnyPieceTargetingSquaresBetweenKingOriginAndDestination()
     {
         var initialKingRow = _chessboard.CurrentTurnColour == Colour.White ? Row.One : Row.Eight;
         var opponentPieces = _chessboard.Pieces.Values.Where(x => x.Colour == _chessboard.CurrentTurnColour.Opposite());
