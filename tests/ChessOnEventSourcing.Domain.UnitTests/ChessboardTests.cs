@@ -75,7 +75,7 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void AllowsShortCastlingForWhite()
+    public void AllowsWhiteToShortCastle()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(
         [
@@ -98,7 +98,7 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void AllowsShortCastlingForBlack()
+    public void AllowsBlackToShortCastle()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(
         [
@@ -119,7 +119,7 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void DoesNotAllowShortCastlingIfKingHasMoved()
+    public void DoesNotAllowWhiteShortCastlingIfKingHasMoved()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, MatrixToPiecesMapper.Map(
         [
@@ -142,7 +142,7 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void DoesNotAllowShortCastlingIfRookHasMoved()
+    public void DoesNotAllowWhiteShortCastlingIfRookHasMoved()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, MatrixToPiecesMapper.Map(
         [
@@ -165,7 +165,7 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void DoesNotAllowToCastleIfWouldResultInCheck()
+    public void DoesNotAllowWhiteToShortCastlingIfWouldResultInCheck()
     {
         var pieces = MatrixToPiecesMapper.Map(
         [
@@ -180,16 +180,13 @@ public sealed class ChessboardTests
         ]);
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, pieces);
 
-        var act = () =>
-        {
-            chessboard.MovePiece(Square.Parse("E1"), Square.Parse("G1"));
-        };
+        var act = () => chessboard.MovePiece(Square.Parse("E1"), Square.Parse("G1"));
 
         act.Should().Throw<InvalidMoveException>();
     }
 
     [Fact]
-    public void DoesNotAllowWhiteToShortCastleIfAnyPieceIsTargetingSquaresBetweenRookAndKing()
+    public void DoesNotAllowWhiteToShortCastleIfAnyPieceIsTargetingSquaresBetweenKingOriginAndDestination()
     {
         var pieces = MatrixToPiecesMapper.Map(
         [
@@ -204,10 +201,7 @@ public sealed class ChessboardTests
         ]);
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, pieces);
 
-        var act = () =>
-        {
-            chessboard.MovePiece(Square.Parse("E1"), Square.Parse("G1"));
-        };
+        var act = () => chessboard.MovePiece(Square.Parse("E1"), Square.Parse("G1"));
 
         act.Should().Throw<InvalidMoveException>();
     }
@@ -227,10 +221,7 @@ public sealed class ChessboardTests
             [' ', ' ', ' ', ' ', 'K', ' ', ' ', 'R']
         ]));
 
-        var act = () =>
-        {
-            chessboard.MovePiece(Square.Parse("E8"), Square.Parse("G8"));
-        };
+        var act = () => chessboard.MovePiece(Square.Parse("E8"), Square.Parse("G8"));
 
         act.Should().Throw<InvalidMoveException>();
     }
@@ -250,10 +241,7 @@ public sealed class ChessboardTests
             [' ', ' ', ' ', ' ', 'K', ' ', ' ', 'R']
         ]));
 
-        var act = () =>
-        {
-            chessboard.MovePiece(Square.Parse("E1"), Square.Parse("G1"));
-        };
+        var act = () => chessboard.MovePiece(Square.Parse("E1"), Square.Parse("G1"));
 
         act.Should().Throw<InvalidMoveException>();
     }
@@ -325,7 +313,7 @@ public sealed class ChessboardTests
     }
 
     [Fact]
-    public void AllowsLongCastlingForWhite()
+    public void AllowsWhiteToLongCastle()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, MatrixToPiecesMapper.Map(
         [
@@ -351,7 +339,7 @@ public sealed class ChessboardTests
     }
     
     [Fact]
-    public void AllowsLongCastlingForBlack()
+    public void AllowsBlackToLongCastle()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.Black, MatrixToPiecesMapper.Map(
         [
@@ -375,9 +363,9 @@ public sealed class ChessboardTests
         rook.Type.Should().Be(PieceType.Rook);
         rook.Colour.Should().Be(Colour.Black);
     }
-
+    
     [Fact]
-    public void DoesNotAllowLongCastlingIfKingHasMovedAlready()
+    public void DoesNotAllowWhiteToLongCastleIfKingHasMovedAlready()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, MatrixToPiecesMapper.Map(
         [
@@ -400,7 +388,7 @@ public sealed class ChessboardTests
     }
     
     [Fact]
-    public void DoesNotAllowLongCastlingIfRookHasMovedAlready()
+    public void DoesNotAllowWhiteToLongCastleIfRookHasMovedAlready()
     {
         var chessboard = Chessboard.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, Colour.White, MatrixToPiecesMapper.Map(
         [
