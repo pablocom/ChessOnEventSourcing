@@ -477,6 +477,14 @@ public sealed class ChessboardTests
         act.Should().Throw<InvalidMoveException>();
     }
     
+    /**
+     * TODO:
+     * - Does not allow black to long castle if king moved
+     * - Does not allow black to long castle if rook moved
+     * - Does not allow white to long castle if piece targeting squares between king's origin and destination
+     * - Does not allow black to long castle if piece targeting squares between king's origin and destination
+     */
+    
     [Fact]
     public void RecognizesFoolsMate()
     {
